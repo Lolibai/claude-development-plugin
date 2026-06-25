@@ -1,0 +1,17 @@
+{
+  "name": "css-drift-auditor",
+  "version": "0.3.0",
+  "description": "Universal, framework-agnostic CSS/design-drift audit pipeline. Maps components, renders them in Storybook, extracts post-cascade computed styles, and flags inconsistent design values for systematic normalization into tokens.",
+  "author": {
+    "name": "Mykhailo"
+  },
+  "keywords": [
+    "css",
+    "design-tokens",
+    "drift",
+    "storybook",
+    "audit",
+    "consistency"
+  ],
+  "license": "MIT"
+}

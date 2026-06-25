@@ -1,0 +1,26 @@
+{
+  "storybook": {
+    "url": "http://localhost:6006",
+    "staticDir": "storybook-static"
+  },
+  "extract": {
+    "properties": [
+      "color", "backgroundColor", "borderColor",
+      "fontSize", "fontWeight", "fontFamily", "lineHeight", "letterSpacing",
+      "borderRadius", "borderWidth", "boxShadow", "zIndex",
+      "padding", "margin", "gap"
+    ],
+    "ignoreValues": [
+      "rgba(0, 0, 0, 0)", "transparent", "none", "normal", "auto",
+      "0px", "rgb(0, 0, 0)"
+    ],
+    "perStoryTimeoutMs": 8000
+  },
+  "clustering": {
+    "colorDistance": 24,
+    "spacingTolerancePx": 2,
+    "fontSizeTolerancePx": 1,
+    "driftMaxUsage": 2
+  },
+  "output": { "dir": "design-audit" }
+}

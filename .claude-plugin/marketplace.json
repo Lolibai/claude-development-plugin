@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "drift-tools",
+  "version": "1.0.0",
+  "description": "Tools for auditing and normalizing CSS/design drift across frontend codebases.",
+  "owner": {
+    "name": "Mykhailo",
+    "email": "you@example.com"
+  },
+  "plugins": [
+    {
+      "name": "css-drift-auditor",
+      "source": "./plugins/css-drift-auditor",
+      "description": "Universal, framework-agnostic CSS/design-drift audit pipeline: maps components and raw HTML tags, renders components in Storybook, extracts post-cascade computed styles, and flags inconsistent values for tokenization.",
+      "version": "0.3.0",
+      "author": { "name": "Mykhailo" },
+      "category": "development",
+      "keywords": ["css", "design-tokens", "drift", "storybook", "audit", "consistency", "react", "angular"]
+    }
+  ]
+}
