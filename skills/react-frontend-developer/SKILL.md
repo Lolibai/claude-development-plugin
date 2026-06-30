@@ -30,7 +30,7 @@ Use this skill when:
 
 ### 0. LEGO Philosophy (mandatory before any markup)
 
-Check the project's component-conventions invariant (e.g. a CLAUDE.md LEGO-philosophy + shared-inventory rule) before writing or refactoring any component. Key rules:
+Invoke the **`lego-philosophy`** skill — the single source of truth for the smart/dumb split + component-inventory rule — before writing or refactoring any component. Key rules:
 - Ask "does a shared/primitive component already exist for this?" — if yes, reuse it.
 - No raw `<div>` stacking as a starting point. Every repeating visual pattern is a named dumb component.
 - **Dumb components**: props-only, no RPC/API, no context hooks — live in the shared UI package or app `components/`.
@@ -144,6 +144,7 @@ export function ComponentName({ prop1, prop2 }: ComponentProps) {
 
 ## Related skills
 
+- `lego-philosophy` — the single source of truth for the smart/dumb split + component inventory; invoke before any markup.
 - `frontend-component-conventions` — component-library + utility-CSS hybrid rules, theme tokens, smart/dumb split, mobile-first, single framework-instance test setup. Always prefer this for pure component/styling concerns.
 - `implement-designs` — pixel-perfect design-to-code orchestration; this skill composes what that skill produces at the page level.
 - `figma-plan-and-validate` — upstream plan/validate pass before any design-driven work.

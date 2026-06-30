@@ -121,7 +121,8 @@ When reviewing, provide:
 - `backend-feature-workflow` — canonical Clean-Architecture layering this skill audits against.
 - `database-migration` — row-level / authorization policy coverage this skill validates on sensitive tables (reads `${backend.platform}`).
 - `serverless-function` — per-function config + request-handler patterns reviewed here for structural risk (reads `${edge.platform}`).
-- `frontend-component-conventions` — component rules and smart/dumb split reviewed on frontend diffs.
+- `lego-philosophy` — the smart/dumb split + component-inventory rule audited on frontend diffs.
+- `frontend-component-conventions` — broader component/styling rules reviewed on frontend diffs.
 - `github-pr-review` — use when the review must produce posted comments on a PR instead of a standalone report.
 - `devfix` — Analyzer subagent escalates here when `risks.compliance` or `risks.clean_arch` is `high`.
 - `memory-validator` — pair with this skill to check both architectural shape and business-logic alignment.

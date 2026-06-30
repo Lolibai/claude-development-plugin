@@ -42,7 +42,7 @@ Every implementation task (devfix, implement-e2e, feature branch) must satisfy a
 - [ ] Dependency direction intact: `domain` ← `application` ← `infrastructure` ← `presentation` — no inward violations
 - [ ] Services accessed via the app/request context (e.g. `ctx.services.*`) — no direct service/adapter imports in routers or use cases
 - [ ] No infrastructure adapters initialized at module load (lazy init only)
-- [ ] LEGO rule: no new one-off UI primitives when a shared component already exists in `${frontend.apps}` / the shared UI package
+- [ ] LEGO rule (see `lego-philosophy` skill): no new one-off UI primitives when a shared component already exists in `${frontend.apps}` / the shared UI package
 
 ## Delivery
 

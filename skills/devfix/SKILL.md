@@ -287,7 +287,7 @@ CHECKPOINT-2-DESIGN: DESIGN_TRUTH
 Only after a valid RED (every required test captured failing for the right reason): write the **minimal** root-cause fix that turns the RED tests green. No features beyond AC, no refactors of untouched code. Re-run the previously-failing tests and confirm they now pass (capture the GREEN output). Then refactor only while staying green. The design-truth/LEGO/design-system-mapping mandates below apply to this step.
 
 **MANDATORY — component-reuse ("LEGO") philosophy (frontend changes only; honor the project's frontend conventions):** Before writing any UI markup, Coder MUST:
-1. Read the project's frontend component conventions (e.g. a CLAUDE.md invariant covering the component inventory).
+1. Invoke the `lego-philosophy` skill (the single source of truth for the smart/dumb split + component inventory).
 2. Ask: "Does a shared/design-system component already exist for this?" — if yes, reuse it.
 3. No raw container stacking as a starting point. Every repeating visual pattern is a named dumb component.
 4. Dumb components: props-only, no data-fetching, no context. Smart components: one concern, almost no markup.

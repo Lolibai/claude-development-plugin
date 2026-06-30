@@ -77,7 +77,7 @@ Use `CreatePlan` with this structure:
 2. **The rule** table: Control appearance = the component library's theme | Layout = utility-CSS | Typography non-library = utility-CSS tokens
 3. **Strictly forbidden list**: component-library layout wrappers (e.g. `Box`/`Stack`/`Grid`), hardcoded hex, inline style objects, duplicate style-prop colors
 4. **Codebase anchors**: exact file paths + existing hooks/schemas referenced
-5. **Smart vs Dumb rule** (one sentence each)
+5. **Smart vs Dumb rule** (one sentence each; per the `lego-philosophy` skill)
 6. **Component map** (mermaid flowchart: orchestrator → smart → dumb chain)
 7. **One step per major component** with:
    - Exact TypeScript interface (every field, including all schema fields)

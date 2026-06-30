@@ -37,6 +37,10 @@ Every other skill/agent/command/loop reads `.claude/stack.md` for these values. 
 ## After onboarding
 
 - Tell the user the config path and that they can edit it any time or re-run this skill.
+- If the project had no root `CLAUDE.md`, onboarding also drops the universal, config-driven
+  `CLAUDE.template.md` as `./CLAUDE.md` (the entry point — invariants + skills map, all specifics
+  read from `.claude/stack.md`). An existing `CLAUDE.md` is left untouched; merge from
+  `skills/onboarding/CLAUDE.template.md` if desired.
 - Point them at `launch-loop-stack` to start the autonomous loops, now driven by their config.
 
 ## Contract for every other skill

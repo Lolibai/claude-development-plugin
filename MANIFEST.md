@@ -27,7 +27,8 @@ Scoping invariant: work is selected by `${issueTracker.myWorkQuery}` — user-sc
 
 ## Layout
 
-- **skills/onboarding/** — writes `.claude/stack.md` (`onboarding.mjs` + `stack.example.md`). Run first.
+- **skills/onboarding/** — writes `.claude/stack.md` (`onboarding.mjs` + `stack.example.md`) and drops the universal `CLAUDE.template.md` as the project's root `CLAUDE.md`. Run first.
+- **skills/lego-philosophy/** — the reusable, project-agnostic UI architecture rule (smart/dumb split + component inventory); the root `CLAUDE.md` and `frontend-component-conventions` reference it.
 - **loops/ (3)** — per-tick specs (FIX/VERIFY/STORY-VERIFY, PR-REVIEW, DEPLOY-FIX).
 - **skills/ (~30)** — orchestration (launch/stop-loop-stack), the devfix fix-path, the gherkin sub-flow, test/review/memory skills. Tool-specific skills are generic + config-driven (database-migration, serverless-function, memory-first, test-management-sync).
 - **agents/ (13)** — the implement/review agent team (analyzer, coder, tester, reviewers, resolver, designer, etc.), tool-agnostic.

@@ -128,13 +128,18 @@ Inline functions as JSX children or passed to `useCallback` / `useMemo` / `memo`
 
 ## Architecture — LEGO philosophy (smart vs dumb split)
 
-**MANDATORY before writing any new component or editing an existing one:** check the project's component conventions (e.g. a CLAUDE.md invariant covering the LEGO philosophy + the shared component inventory). Ask "does a shared/primitive component already exist for this?" If yes, reuse it.
+**MANDATORY before writing any new component or editing an existing one:** invoke the
+**`lego-philosophy`** skill — it is the single source of truth for the smart/dumb split, the
+component-inventory rule, and the red-flags list. Always ask "does a shared/primitive component
+already exist for this?" before stacking divs; if yes, reuse it. The essentials:
 
 - **Presentational ("dumb") components** live in the shared components package or app-local `components/`. No data fetching, no RPC/API imports, no router hooks — take props, emit events.
 - **Container ("smart") components** live in `pages/` or `features/`. They own data queries/mutations, context, routing — render dumb components with almost no JSX of their own.
 - Reusable cross-app pieces go in the shared components package. App-specific variants stay in `<app>/src/components/` for the relevant app in `${frontend.apps}`.
 - **No raw `<div>` stacking** as a starting point. Every repeating visual pattern is a named dumb component.
 - Red flags: 3+ nested anonymous divs, copied utility classNames across files, inline icon+label combos, inline style objects, card-shaped divs without a shared wrapper component.
+
+See `lego-philosophy` for the full rule, the inventory workflow, and the merge checklist.
 
 ## Unit tests — single framework instance (required for any frontend test)
 
@@ -160,7 +165,7 @@ optimizeDeps: { include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-
 
 Before merging a new/edited component:
 
-- [ ] **LEGO check**: read the project's component-conventions invariant; confirmed no existing shared/primitive component covers this; no raw div stacking; every repeating pattern is a named dumb component
+- [ ] **LEGO check** (via the `lego-philosophy` skill): confirmed no existing shared/primitive component covers this; no raw div stacking; every repeating pattern is a named dumb component
 - [ ] Component library used for controls, utility classes used for layout (no library layout wrappers/`Typography` for structure)
 - [ ] Theme provider wraps the subtree (or inherits from app root)
 - [ ] Form fields wrapped in the form library's binding wrapper; validation errors surfaced via `error` + `helperText` / `FormHelperText`
@@ -173,6 +178,7 @@ Before merging a new/edited component:
 
 ## Related skills
 
+- `lego-philosophy` — the single source of truth for the smart/dumb split + component inventory; invoke it before any UI work.
 - `implement-designs`, `figma-plan-and-validate` — design-to-code pipeline using this skill's hybrid rules.
 - `react-frontend-developer` — feature-level wiring (data fetching, routing, contexts) that composes these components.
 - `mobile-friendly-checker` — post-edit audit for responsiveness and touch targets.

@@ -36,7 +36,7 @@ Read the project's Definition of Done (e.g. `.claude/skills/shared/definition-of
 - [ ] If `${compliance}` ≠ none: no regulated data in error messages; audit convention present on mutating endpoints
 - [ ] All mandatory Gherkin scenarios exist in repo and passed
 - [ ] Unit tests added for changed modules; no assertions weakened
-- [ ] Component-reuse rule (e.g. a "LEGO" rule): no one-off UI primitives when shared components exist — frontend only, per `${frontend.*}`
+- [ ] Component-reuse rule (the `lego-philosophy` skill): no one-off UI primitives when shared components exist — frontend only, per `${frontend.*}`
 
 ### 2. Clean Code lens
 

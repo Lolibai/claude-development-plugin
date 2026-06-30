@@ -305,3 +305,18 @@ fs.writeFileSync(path.resolve(OUT, "stack.md"), renderMd(cfg));
 console.log("\nWrote " + path.relative(ROOT, path.resolve(OUT, "stack.json")) + " and " + path.relative(ROOT, path.resolve(OUT, "stack.md")));
 console.log("  The loop-stack skills now read this instead of asking project-specific questions.");
 console.log("  Review .claude/stack.md and tweak anything (especially issue-tracker states/transitions).");
+
+// Drop the universal, config-driven CLAUDE.md at the project root if one isn't there yet.
+// It is project-agnostic (reads .claude/stack.md), so we never clobber an existing file.
+const claudeMdPath = path.resolve(ROOT, "CLAUDE.md");
+if (!fs.existsSync(claudeMdPath)) {
+  const tplPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), "CLAUDE.template.md");
+  try {
+    fs.copyFileSync(tplPath, claudeMdPath);
+    console.log("  Wrote " + path.relative(ROOT, claudeMdPath) + " (universal entry point; reads .claude/stack.md).");
+  } catch {
+    console.log("  Note: copy skills/onboarding/CLAUDE.template.md to ./CLAUDE.md for the universal entry point.");
+  }
+} else {
+  console.log("  CLAUDE.md already exists — left untouched. See skills/onboarding/CLAUDE.template.md for the universal version.");
+}

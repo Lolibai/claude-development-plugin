@@ -177,7 +177,7 @@ gaps:
   missing_theme_tokens: []
   schema_mismatches: []
 coder_brief: |
-  MANDATORY — LEGO philosophy: Before any markup, read the project's component-conventions invariant (LEGO philosophy + shared inventory).
+  MANDATORY — LEGO philosophy: Before any markup, invoke the `lego-philosophy` skill (single source of truth for the smart/dumb split + shared inventory).
   Ask "does a shared/primitive component already exist for this?" If yes, reuse it — never recreate.
   Order: 1) shared primitives (if any) 2) dumb components 3) smart containers.
   Dumb = props-only, no RPC/API, no context. Smart = one concern, almost no JSX, passes flat props to dumb children.
