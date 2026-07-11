@@ -18,7 +18,7 @@ filter unless the configured query already implies one.
 - STORY-VERIFY operates on **stories** (`${issueTracker.issueTypes.story}` and any extras in config);
   its AC check is **E2E-mandatory** (needs ≥1 passing `${testing.e2e.tagConvention}` scenario keyed to
   the issue; unit-only never satisfies the gate; no deploy gate; assignee left unchanged).
-  Park file: `/tmp/my-stories-verify-parked.txt`.
+  Park file: `.claude/loops/state/my-stories-verify-parked.txt`.
 
 ## Bug lifecycle the loop drives
 
@@ -60,14 +60,14 @@ Job IDs are assigned by `launch-loop-stack` at registration (`CronList` to see t
 
 ## VERIFY job — any time, session active
 
-1. Query bugs in `${states.verify}` via `${issueTracker.myWorkQuery}`, **excluding keys in `/tmp/my-bugs-verify-parked.txt`**. None → stop.
+1. Query bugs in `${states.verify}` via `${issueTracker.myWorkQuery}`, **excluding keys in `.claude/loops/state/my-bugs-verify-parked.txt`**. None → stop.
 2. Overlap guard dirty (FIX may be mid-fix) → stop.
 3. Pick one (priority DESC, lowest key).
 4. `git fetch`; checkout the issue's branch if it exists, else `origin/${vcs.integrationBranch}`.
 5. **Find AC-covering tests via the fix commit:** `git log --all --grep="<KEY>"` → `git show --name-only <fixSHA>`, take its test files. Unit-test locations come from `${testing.unit.locations}`. Run:
    - those AC-covering unit tests with `${testing.unit.runner}` (from the correct package/dir),
    - e2e (if `${testing.e2e.runner}` ≠ none): in `${testing.e2e.dir}`, run `${testing.e2e.bddStep}` then the e2e command filtered to the issue's `${testing.e2e.tagConvention}` tag. No matching scenario → e2e **N/A**.
-   - **Coverage rule:** at least ONE test must exercise this bug's AC (the fix commit's test, or a tagged e2e). **None exists → PARK** (`echo "<KEY> # no AC coverage" >> /tmp/my-bugs-verify-parked.txt`) and stop — do **not** transition.
+   - **Coverage rule:** at least ONE test must exercise this bug's AC (the fix commit's test, or a tagged e2e). **None exists → PARK** (`echo "<KEY> # no AC coverage" >> .claude/loops/state/my-bugs-verify-parked.txt`) and stop — do **not** transition.
 6. **Deploy gate (only if `${ci.deployGate}` is true):** fix commit in `origin/${vcs.integrationBranch}` **and** a **successful** relevant deploy run from `${ci.deployWorkflows}` includes it (fix SHA ancestor of run head SHA), via `gh`. If `${ci.deployGate}` is false, skip this gate.
 7. **Only if all AC-covering tests green AND (deploy gate passes or is off):** transition → `${states.verified}` + set assignee per `${issueTracker.handoffAssignee}` (e.g. reporter; or leave as-is if `none`) + comment (tests [+ deploy run]).
 8. **Gaps:**
@@ -75,7 +75,7 @@ Job IDs are assigned by `launch-loop-stack` at registration (`CronList` to see t
    - **Transient — do NOT park, retried next tick:** deploy pending/not-green → stop. OR an env/infra failure described in `${recoveryNotes}` → follow that runbook, don't park. **Never mark a bug failed for an env/infra reason.**
 9. Leave the working tree clean (back on `origin/${vcs.integrationBranch}` or the configured base) when done.
 
-> **Parking** (`/tmp/my-bugs-verify-parked.txt`) keeps a non-verifiable bug (no coverage, or a real failure) from being re-picked every tick and starving the queue. Parked = **needs a human**. Clear the file to un-park.
+> **Parking** (`.claude/loops/state/my-bugs-verify-parked.txt`) keeps a non-verifiable bug (no coverage, or a real failure) from being re-picked every tick and starving the queue. Parked = **needs a human**. Clear the file to un-park.
 
 ## Start / Stop / Adjust
 

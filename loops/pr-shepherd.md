@@ -44,7 +44,7 @@ waiting).
    `gh pr list --state open --author ${project.username} --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`.
    For each candidate, also read check status (`gh pr checks <n>`) and unresolved review threads
    (GraphQL `reviewThreads(first: 50) { nodes { isResolved } }`).
-2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `/tmp/pr-shepherd-done.txt`
+2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `.claude/loops/state/pr-shepherd-done.txt`
    (handled at that exact head; new commits move the head, and new review threads arrive on a new
    or same head — a same-head PR re-qualifies only via a **new unresolved thread** not present when
    it was recorded).
@@ -70,7 +70,7 @@ waiting).
      + tests touching the conflicted files — must pass. Commit the merge; push. (Plain merge, never
      rebase + force-push — the branch may have review history or others' commits.)
 6. Verify the push landed, then append `"<number>@<headRefOid-BEFORE-the-action>"` to
-   `/tmp/pr-shepherd-done.txt`. If the PR turned out to need a **human** (unresolvable disagreement,
+   `.claude/loops/state/pr-shepherd-done.txt`. If the PR turned out to need a **human** (unresolvable disagreement,
    pure infra, a fix you cannot make safely) → say exactly that in a PR comment **and** record it in
    the done-file with `# needs-human: <one-line>` so it isn't retried every tick — the DAILY-REPORT
    loop surfaces these.
@@ -90,7 +90,7 @@ waiting).
 
 - **Stop:** `stop-loop-stack`, or `CronDelete <id>` (`CronList` for ids), or close the session.
 - **Re-register** (after editing this file / new session): re-run `launch-loop-stack`.
-- **Cadence:** edit the minute list. **Re-handle a PR from scratch:** remove its lines from `/tmp/pr-shepherd-done.txt`.
+- **Cadence:** edit the minute list. **Re-handle a PR from scratch:** remove its lines from `.claude/loops/state/pr-shepherd-done.txt`.
 - **Survive restarts:** register with `durable: true`. **Survive a closed terminal:** use a cloud `/schedule`.
 
 ## Caveats
