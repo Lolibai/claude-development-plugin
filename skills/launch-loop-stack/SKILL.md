@@ -1,6 +1,6 @@
 ---
 name: launch-loop-stack
-description: Launch the full autonomous loop stack for the current session — the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, and DEPLOY-FIX recurring ticks — by creating their session crons in one shot. Use when the user says "launch the loops", "start the loop stack", "set up the my-work loops", "run the autonomous loops", or after a session restart where the prior crons were lost. Each loop is one-action-per-tick, reads .claude/stack.md for all project specifics, and never overrides branch protection. Full per-loop specs live in .claude/loops/.
+description: Launch the full autonomous loop stack for the current session — the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, and DAILY-REPORT recurring ticks — by creating their session crons in one shot. Use when the user says "launch the loops", "start the loop stack", "set up the my-work loops", "run the autonomous loops", or after a session restart where the prior crons were lost. Each loop is one-action-per-tick, reads .claude/stack.md for all project specifics, and never overrides branch protection. Full per-loop specs live in .claude/loops/.
 ---
 
 # Launch Loop Stack
@@ -13,7 +13,9 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 > tracker + `${issueTracker.myWorkQuery}`/states/transitions, `${vcs.*}` branch model, `${commands.*}`,
 > `${testing.*}`, `${ci.*}`) from that file. If it's missing, run the **`onboarding`** skill first and stop.
 > Only register loops the config supports: skip DEPLOY-FIX when `${ci.deployWorkflows}` is empty; skip
-> the e2e gate when `${testing.e2e.runner}` is `none`; skip PR-REVIEW when no reviewer handle is set.
+> the e2e gate when `${testing.e2e.runner}` is `none`; skip PR-REVIEW when no reviewer handle is set;
+> skip PR-SHEPHERD when `${project.username}` is unset (it must never act on PRs that are not mine).
+> DAILY-REPORT always applies (push notification needs no config; `${reporting.destination}` is optional).
 
 | Loop | Cadence | Cron expression | Spec |
 |---|---|---|---|
@@ -22,6 +24,8 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 | **STORY-VERIFY** | any time, every 5 min at :02/:07/… | `2-57/5 * * * *` | `.claude/loops/my-bugs-in-sprint-devfix.md` |
 | **PR-REVIEW** | every 10 min | `*/10 * * * *` | `.claude/loops/pr-review.md` |
 | **DEPLOY-FIX** | every 10 min at :04/:14/… | `4,14,24,34,44,54 * * * *` | `.claude/loops/deploy-failure-fix.md` |
+| **PR-SHEPHERD** | every 10 min at :06/:16/… | `6,16,26,36,46,56 * * * *` | `.claude/loops/pr-shepherd.md` |
+| **DAILY-REPORT** | weekdays 16:58, once | `58 16 * * 1-5` | `.claude/loops/daily-report.md` |
 
 These are **session-only** (auto-expire after 7 days, stop when the session ends). They never force-merge or override branch protection.
 
@@ -56,7 +60,7 @@ STEP 1 — RECONCILE prior FIX work first. git fetch origin. Look for a PR this 
 - MERGED → transition that bug ${states.inProgress}→${states.verify} (by state name, or transition id from ${issueTracker.transitionIds} if the tracker needs it) so VERIFY can pick it up. STOP.
 - OPEN, all required checks GREEN → merge per ${vcs.autoMerge} (e.g. `gh pr merge --squash`); on success transition the bug→${states.verify}. STOP. (Blocked by branch protection/required approvals → leave open, note, STOP — never override.)
 - OPEN, any check PENDING/queued → STOP (a later tick retries).
-- OPEN, a check FAILING → leave open for human review, STOP.
+- OPEN, a check FAILING → leave open — the PR-SHEPHERD loop triages and fixes it. STOP.
 
 STEP 2 — START a new fix (only if no in-flight loop PR from step 1). Query my bugs in ${states.todo} via ${issueTracker.myWorkQuery} (status = ${states.todo}, ORDER BY priority DESC, key ASC). None → STOP.
 - Overlap guard: `git status --porcelain` over the project's source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
@@ -127,6 +131,34 @@ Autonomous DEPLOY-FIX TICK (any time, session active). First read .claude/stack.
 5. To fix (CODE/CONFIG only): base branch = ${vcs.fixBaseBranches[env]} (fall back to the env branch). Create branch "fix/deploy-<scope>-<env>-<databaseId>". Make the MINIMAL root-cause fix; add a covering test where practical. Run ${commands.typecheck} && ${commands.lint} (+ targeted tests) — must pass.
 6. Commit per the tracker's no-ticket convention + Conventional Commit: "fix(<scope>): <what> (deploy <env> <workflow>)". Push. Open PR with `gh pr create --base <env-branch>`, body = failing run link + root cause + fix. Enable auto-merge per ${vcs.autoMerge}: `gh pr merge --auto --squash`. Never force-merge / override branch protection.
 7. Append "<databaseId> # fixed via PR #<n>" to /tmp/deploy-fix-done.txt. Return to the configured base branch, leave the tree clean. STOP.
+```
+
+### Loop 6 — PR-SHEPHERD  (`cron: 6,16,26,36,46,56 * * * *`, recurring) — skip if ${project.username} is unset
+
+```
+Autonomous PR-SHEPHERD TICK (any time, session active). First read .claude/stack.md. Shepherd MY open PRs in ${project.repo} (author ${project.username}) — the loops (or I) opened them and nobody else will finish them. ONE action on ONE PR per tick. Full spec: .claude/loops/pr-shepherd.md
+
+1. git fetch origin. List my open PRs: `gh pr list --state open --author ${project.username} --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`; per candidate also read check status (`gh pr checks <n>`) and unresolved review threads (GraphQL reviewThreads, isResolved=false).
+2. DEDUPE: skip any PR whose "<number>@<headRefOid>" is in /tmp/pr-shepherd-done.txt (handled at that head; new commits or new unresolved threads re-qualify it).
+3. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
+4. Pick ONE PR needing help, priority order (ties → oldest updatedAt): (a) REVIEW-RESPOND: reviewDecision=CHANGES_REQUESTED or unresolved threads; (b) CI-FIX: a required check FAILING; (c) CONFLICT: mergeable=CONFLICTING. None → STOP.
+5. Act — one action, one PR:
+   - REVIEW-RESPOND: checkout the PR branch; address each actionable comment with the minimal change (assertion integrity — NEVER weaken or delete a test to satisfy a comment without stating why in the reply); for comments I disagree with, reply with technical reasoning and change nothing; reply to EVERY unresolved thread; run ${commands.typecheck} && ${commands.lint} + tests targeted at changed files — must pass; commit per the PR's ticket key + convention; push; re-request review from each reviewer who requested changes.
+   - CI-FIX: run the pr-ci-failure-triage skill scoped to this PR — diagnose the failing check from `gh run view <id> --log-failed`, minimal root-cause fix on the PR branch, verify ${commands.typecheck} && ${commands.lint} (+ targeted tests), push. PURE INFRA (runner/secrets/quota/registry) → comment the diagnosis on the PR, record in the done-file, STOP. Never touch secrets.
+   - CONFLICT: checkout the PR branch; `git merge origin/<PR base branch>`; resolve each conflict in the intent of BOTH sides (read both conflicting commits/tickets first — never blind-take ours/theirs); run ${commands.typecheck} && ${commands.lint} + tests touching conflicted files — must pass; commit the merge; push. Plain merge, never rebase + force-push.
+6. Verify the push landed; append "<number>@<headRefOid-BEFORE>" to /tmp/pr-shepherd-done.txt. Needs a HUMAN (unresolvable disagreement, pure infra, no safe fix) → say so in a PR comment AND record "# needs-human: <one-line>" in the done-file so it isn't retried (DAILY-REPORT surfaces these).
+7. Return to the configured base branch, leave the tree clean. One PR per tick. Never force-push, never merge, never override branch protection, never touch a PR I didn't author. Session-only.
+```
+
+### Loop 7 — DAILY-REPORT  (`cron: 58 16 * * 1-5`, recurring)
+
+```
+Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/stack.md. READ-ONLY + one notification — never changes code, PRs, branches, or tracker state. Full spec: .claude/loops/daily-report.md
+
+1. Gather the last 24h: merged PRs (`gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago>"`); my open PRs + what each waits on (checks/review/conflict); tracker issues I transitioned or commented in the window (via ${issueTracker.myWorkQuery} + changelogs); reviews posted (/tmp/pr-review-done.txt); deploy incidents (/tmp/deploy-fix-done.txt); and ALL PARKED items — every line of /tmp/my-bugs-verify-parked.txt, /tmp/my-stories-verify-parked.txt, and every "# needs-human" line in /tmp/pr-shepherd-done.txt.
+2. Compose a short human-voice standup summary: Done (merged/verified) · In flight (open PRs + blocker) · Blocked/parked (each with its one-line reason — this section is the loop's reason to exist) · Incidents (deploy fixes/infra).
+3. Deliver: if ${reporting.destination} is set, post the summary there; ALWAYS also send a PushNotification with the one-line headline (e.g. "3 merged, 2 verified, 1 parked (KEY-123: no AC coverage)").
+4. Quiet-day rule: nothing happened AND nothing parked → send nothing. Parked items exist → ALWAYS report; they repeat daily until a human clears them. Session-only.
 ```
 
 ---

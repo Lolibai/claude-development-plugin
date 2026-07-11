@@ -59,6 +59,9 @@
 ## Design
 - Figma: yes · designs referenced by frame link in the ticket
 
+## Reporting
+- Daily report: yes · destination: **none** (= push notification only; or a channel / tracker page / issue to post the summary to) · hour: 16:58
+
 ## Compliance / data protection
 - Regime: **HIPAA** (reviewers apply data-protection/sensitive-data checks only when this is not "none")
 
