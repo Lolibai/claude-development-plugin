@@ -7,8 +7,8 @@ and every file reads from it. See `CONVENTIONS.md` for the token → config mapp
 
 ## Bring it to a project (3 steps)
 
-1. Put this stack in the project's `.claude/` (copy `skills/`, `agents/`, `commands/`, `loops/`), or install it as a plugin.
-2. Run **`onboarding`** — detects the stack and writes `.claude/stack.md` (issue tracker, branch model, package manager, frameworks, backend/DB, edge, tests, CI/deploy, design).
+1. Install it: `/plugin marketplace add Lolibai/claude-development-plugin` then `/plugin install loop-stack@dev-tools` — or copy this directory's `skills/`, `agents/`, `commands/`, `loops/` into the project's `.claude/`.
+2. Run **`onboarding`** — detects the stack, writes `.claude/stack.md` (issue tracker, branch model, package manager, frameworks, backend/DB, edge, tests, CI/deploy, design, reporting), creates the gitignored `.claude/loops/state/` dir, and materializes `loops/*.md` into `.claude/loops/` (cron prompts reference them there).
 3. Run **`launch-loop-stack`** — registers the session crons, now driven entirely by your config.
 
 Anything in the config set to `none`/empty is skipped — no deploy gate if you have no CI, no e2e gate if you have no e2e runner, no tracker transitions if you use GitHub Issues, etc.
@@ -18,12 +18,13 @@ Anything in the config set to `none`/empty is skipped — no deploy gate if you 
 | Loop | Cadence (cron) | Spec file |
 |---|---|---|
 | FIX | `*/5 6-20 * * 1-5` | loops/my-bugs-in-sprint-devfix.md |
-| VERIFY | `*/5 * * * *` | loops/my-bugs-in-sprint-devfix.md |
+| VERIFY | `3-58/5 * * * *` | loops/my-bugs-in-sprint-devfix.md |
 | STORY-VERIFY | `2-57/5 * * * *` | loops/my-bugs-in-sprint-devfix.md |
 | PR-REVIEW | `*/10 * * * *` | loops/pr-review.md |
 | DEPLOY-FIX | `4,14,24,34,44,54 * * * *` | loops/deploy-failure-fix.md (skipped if no deploy workflows) |
 | PR-SHEPHERD | `6,16,26,36,46,56 * * * *` | loops/pr-shepherd.md (my open PRs: review-respond / CI-fix / conflict-resolve) |
-| DAILY-REPORT | `58 16 * * 1-5` | loops/daily-report.md (read-only standup summary + parked-item escalation) |
+| SYNC-INTEGRATION | `9,39 * * * *` | loops/sync-integration.md (keeps fix-base branches synced with env branches; skipped if none configured) |
+| DAILY-REPORT | `59 16 * * 1-5` | loops/daily-report.md (read-only standup summary + parked-item escalation) |
 
 Scoping invariant: work is selected by `${issueTracker.myWorkQuery}` — user-scoped + the active iteration, never the whole backlog. Each tick does one action, gates strictly on green tests (+ deploy when configured), and never overrides branch protection.
 
@@ -31,7 +32,7 @@ Scoping invariant: work is selected by `${issueTracker.myWorkQuery}` — user-sc
 
 - **skills/onboarding/** — writes `.claude/stack.md` (`onboarding.mjs` + `stack.example.md`) and drops the universal `CLAUDE.template.md` as the project's root `CLAUDE.md`. Run first.
 - **skills/lego-philosophy/** — the reusable, project-agnostic UI architecture rule (smart/dumb split + component inventory); the root `CLAUDE.md` and `frontend-component-conventions` reference it.
-- **loops/ (5)** — per-tick specs (FIX/VERIFY/STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, DAILY-REPORT).
+- **loops/ (6)** — per-tick specs (FIX/VERIFY/STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, SYNC-INTEGRATION, DAILY-REPORT).
 - **skills/ (~30)** — orchestration (launch/stop-loop-stack), the devfix fix-path, the gherkin sub-flow, test/review/memory skills. Tool-specific skills are generic + config-driven (database-migration, serverless-function, memory-first, test-management-sync).
 - **agents/ (13)** — the implement/review agent team (analyzer, coder, tester, reviewers, resolver, designer, etc.), tool-agnostic.
 - **commands/ (10)** — fix/PR-flow slash commands.

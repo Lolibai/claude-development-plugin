@@ -1,13 +1,21 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "name": "drift-tools",
-  "version": "1.0.0",
-  "description": "Tools for auditing and normalizing CSS/design drift across frontend codebases.",
+  "name": "dev-tools",
+  "version": "1.1.0",
+  "description": "Development tooling for Claude Code: the autonomous dev loop stack and CSS/design-drift auditing.",
   "owner": {
-    "name": "Mykhailo",
-    "email": "you@example.com"
+    "name": "Mykhailo"
   },
   "plugins": [
+    {
+      "name": "loop-stack",
+      "source": "./plugins/loop-stack",
+      "description": "Universal, config-driven autonomous dev loop stack: session crons that fix assigned bugs, verify against AC + deploys, review requested PRs, shepherd your own PRs to merge, repair failed deployments, sync fix-base branches, and post a daily standup report. Project specifics live in .claude/stack.md (written by the onboarding skill).",
+      "version": "1.0.0",
+      "author": { "name": "Mykhailo" },
+      "category": "development",
+      "keywords": ["autonomous", "loops", "cron", "devfix", "pr-review", "ci", "jira", "workflow"]
+    },
     {
       "name": "css-drift-auditor",
       "source": "./plugins/css-drift-auditor",
