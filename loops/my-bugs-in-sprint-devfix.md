@@ -50,7 +50,7 @@ Job IDs are assigned by `launch-loop-stack` at registration (`CronList` to see t
 - **Merged** → transition bug `${states.inProgress}` → `${states.verify}` so VERIFY can pick it up. Stop.
 - **Open + all checks green** → merge per `${vcs.autoMerge}` (e.g. `gh pr merge --squash`); on success → `${states.verify}`. Stop. (Blocked by branch protection / required approvals → leave open, note, stop — never override.)
 - **Open + any pending/queued check** → stop (later tick retries).
-- **Open + a failing check** → leave open for human, stop.
+- **Open + a failing check** → leave open — the **PR-SHEPHERD** loop triages and fixes it (see `.claude/loops/pr-shepherd.md`), stop.
 
 **Step 2 — start a new fix** (only if no in-flight loop PR):
 1. Query bugs in `${states.todo}` via `${issueTracker.myWorkQuery}`. None → stop.

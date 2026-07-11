@@ -164,6 +164,7 @@ function defaultsFrom(d, prev) {
     memory: (p.memory) || { store: "none", collectionNaming: "", note: "" },
     ci: { host: d.ci.host, deployWorkflows: (p.ci && p.ci.deployWorkflows) || { default: d.ci.deployWorkflows }, deployGate: (p.ci && typeof p.ci.deployGate === "boolean") ? p.ci.deployGate : false, humanGatedEnvs: (p.ci && p.ci.humanGatedEnvs) || ["prod"] },
     design: (p.design) || { figma: false, note: "" },
+    reporting: (p.reporting) || { daily: true, destination: "none" },
     compliance: (p.compliance) || "none",
     recoveryNotes: (p.recoveryNotes) || "",
   };
@@ -197,6 +198,7 @@ async function prompt(cfg) {
   cfg.testing.testManagement = await ask("Test-management sync (zephyr/testrail/none)", cfg.testing.testManagement);
   cfg.memory.store = await ask("Vector-memory store (qdrant/none)", cfg.memory.store);
   cfg.design.figma = /^(y|yes|true)$/i.test(await ask("Use Figma for designs? (y/n)", cfg.design.figma ? "y" : "n"));
+  cfg.reporting.destination = await ask("Daily-report destination (none = push notification only; or a channel/page/issue)", cfg.reporting.destination || "none");
   cfg.compliance = await ask("Data-protection regime (none/HIPAA/GDPR/PCI/...)", cfg.compliance || "none");
   cfg.commands.commitNoAttribution = /^(y|yes|true)$/i.test(await ask("Forbid AI-attribution lines in commit messages? (y/n)", cfg.commands.commitNoAttribution ? "y" : "n"));
   rl.close();
@@ -276,6 +278,9 @@ function renderMd(c) {
   L.push("");
   L.push("## Design");
   L.push("- Figma: " + yn(c.design.figma) + (c.design.note ? " | " + c.design.note : ""));
+  L.push("");
+  L.push("## Reporting");
+  L.push("- Daily report: " + yn(c.reporting.daily) + " | destination: **" + v(c.reporting.destination) + "** (none = push notification only)");
   L.push("");
   L.push("## Compliance / data protection");
   L.push("- Regime: **" + (c.compliance || "none") + "** (reviewers apply data-protection/sensitive-data checks only when this is not \"none\"; e.g. HIPAA, GDPR, PCI)");

@@ -1,6 +1,6 @@
 ---
 name: stop-loop-stack
-description: Tear down the autonomous "my work in the active iteration" loop stack for the current session — delete the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, and SYNC-INTEGRATION recurring crons in one shot so no further ticks fire. Use when the user says "stop the loops", "bring the loop stack down", "tear down / halt / kill / pause the loops", "stop the my-work loops", or "disable the autonomous loops". The inverse of `launch-loop-stack`. Stops scheduling only — never touches code, branches, or in-flight issue-tracker/PR state.
+description: Tear down the autonomous "my work in the active iteration" loop stack for the current session — delete the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, DAILY-REPORT, and SYNC-INTEGRATION recurring crons in one shot so no further ticks fire. Use when the user says "stop the loops", "bring the loop stack down", "tear down / halt / kill / pause the loops", "stop the my-work loops", or "disable the autonomous loops". The inverse of `launch-loop-stack`. Stops scheduling only — never touches code, branches, or in-flight issue-tracker/PR state.
 ---
 
 # Stop Loop Stack
@@ -23,6 +23,8 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 | **STORY-VERIFY** | `— STORY-VERIFY TICK` (matches `Autonomous "my stories" — STORY-VERIFY TICK`) | `.claude/loops/my-bugs-in-sprint-devfix.md` |
 | **PR-REVIEW** | `Autonomous PR-REVIEW TICK` | `.claude/loops/pr-review.md` |
 | **DEPLOY-FIX** | `Autonomous DEPLOY-FIX TICK` | `.claude/loops/deploy-failure-fix.md` |
+| **PR-SHEPHERD** | `Autonomous PR-SHEPHERD TICK` | `.claude/loops/pr-shepherd.md` |
+| **DAILY-REPORT** | `Autonomous DAILY-REPORT TICK` | `.claude/loops/daily-report.md` |
 | **SYNC-INTEGRATION** | `Autonomous SYNC-INTEGRATION TICK` | (keeps `${vcs.fixBaseBranches}` current with `${vcs.integrationBranch}`) |
 
 ## When to use
@@ -37,7 +39,7 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 3. **Delete each matched cron** with `CronDelete <id>`. One call per job.
 4. **Re-list** (`CronList`) to confirm none of the signatures remain.
 5. **Report**:
-   - Every job ID deleted, grouped by loop name (FIX / VERIFY / STORY-VERIFY / PR-REVIEW / DEPLOY-FIX / SYNC-INTEGRATION).
+   - Every job ID deleted, grouped by loop name (FIX / VERIFY / STORY-VERIFY / PR-REVIEW / DEPLOY-FIX / PR-SHEPHERD / DAILY-REPORT / SYNC-INTEGRATION).
    - Any stack loop that was **already absent** (nothing to delete).
    - Any **non-stack** crons left untouched (list them so the user knows they're still scheduled).
 6. Do **not** delete the `/tmp` loop state files by default (see below).
@@ -52,10 +54,12 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 The loops keep small dedupe / park files under `/tmp`. **Leave them in place** so a later `launch-loop-stack` resumes cleanly without re-parking or re-reviewing:
 
 - `/tmp/my-bugs-verify-parked.txt` — bugs VERIFY has parked (e.g. no AC coverage).
+- `/tmp/my-stories-verify-parked.txt` — stories STORY-VERIFY has parked (e.g. no e2e AC coverage).
 - `/tmp/pr-review-done.txt` — `"<number>@<headRefOid>"` of PRs already reviewed.
 - `/tmp/deploy-fix-done.txt` — deploy run IDs already handled.
+- `/tmp/pr-shepherd-done.txt` — `"<number>@<headRefOid>"` of my PRs already shepherded (incl. `# needs-human` escalations).
 
-Only clear these if the user explicitly asks for a **full reset** (e.g. "stop the loops and wipe their state"). If so, `rm -f` the three files and say which were removed.
+Only clear these if the user explicitly asks for a **full reset** (e.g. "stop the loops and wipe their state"). If so, `rm -f` the files and say which were removed.
 
 ## Restarting
 
@@ -67,3 +71,5 @@ To bring the stack back up, invoke `launch-loop-stack` (it re-creates only the l
 - `.claude/loops/my-bugs-in-sprint-devfix.md` — full FIX + VERIFY spec.
 - `.claude/loops/pr-review.md` — full PR-REVIEW spec.
 - `.claude/loops/deploy-failure-fix.md` — full DEPLOY-FIX spec.
+- `.claude/loops/pr-shepherd.md` — full PR-SHEPHERD spec.
+- `.claude/loops/daily-report.md` — full DAILY-REPORT spec.
