@@ -42,10 +42,11 @@ is scoped by reviewer handle; DEPLOY-FIX by repo/branch.
 ## How to launch (do this when invoked)
 
 1. **Load config.** Read `.claude/stack.md`. Missing → run `onboarding`, stop. Substitute its values into the prompts below (everything in `${...}`).
-2. **Check for duplicates.** `CronList`; if an equivalent prompt already exists for a loop, report its job ID instead of creating a second. Only create missing loops.
-3. **Create each missing, applicable loop** with `CronCreate` (`recurring: true`) using the cron expression + the resolved prompt. The prompt IS the per-tick instruction fired into a fresh session.
-4. **Report** every job ID created (and any skipped — as duplicate, or as N/A for this project's config), the cadence, that they're session-only + auto-expire in 7 days, and how to stop (`stop-loop-stack` / `CronDelete <id>` / `CronList`).
-5. Don't run a tick inline now unless asked — the crons fire on their own schedule.
+2. **Prepare the state dir.** All loop park/dedupe files live in the project's **`.claude/loops/state/`** — per-project by construction, survives reboots, never global `/tmp` (shared across projects: issue keys, PR numbers, and deploy run IDs from different repos would collide there). `mkdir -p .claude/loops/state` and ensure `.claude/loops/state/` is in `.gitignore` (append if missing). Legacy `/tmp/*.txt` state from older stack versions is **not** migrated automatically (it may mix projects) — migrate lines by hand if needed.
+3. **Check for duplicates.** `CronList`; if an equivalent prompt already exists for a loop, report its job ID instead of creating a second. Only create missing loops.
+4. **Create each missing, applicable loop** with `CronCreate` (`recurring: true`) using the cron expression + the resolved prompt. The prompt IS the per-tick instruction fired into a fresh session.
+5. **Report** every job ID created (and any skipped — as duplicate, or as N/A for this project's config), the cadence, that they're session-only + auto-expire in 7 days, and how to stop (`stop-loop-stack` / `CronDelete <id>` / `CronList`).
+6. Don't run a tick inline now unless asked — the crons fire on their own schedule.
 
 > Demo / release freezes are situational and NOT baked in. Honor a declared freeze ad hoc (skip merges/deploys during it).
 
@@ -72,14 +73,14 @@ STEP 2 — START a new fix (only if no in-flight loop PR from step 1). Query my 
 
 ```
 Autonomous "my bugs" — VERIFY TICK (any time, session active). First read .claude/stack.md. BUGS ONLY: issue type = ${issueTracker.issueTypes.bug}, via ${issueTracker.myWorkQuery} — USER-SCOPED + active iteration. One bug per tick. Full spec: .claude/loops/my-bugs-in-sprint-devfix.md
-1. Query my bugs in status ${states.verify} via ${issueTracker.myWorkQuery} (ORDER BY priority DESC, key ASC), EXCLUDING any key in /tmp/my-bugs-verify-parked.txt. None → STOP.
+1. Query my bugs in status ${states.verify} via ${issueTracker.myWorkQuery} (ORDER BY priority DESC, key ASC), EXCLUDING any key in .claude/loops/state/my-bugs-verify-parked.txt. None → STOP.
 2. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP (FIX may be mid-devfix).
 3. Pick ONE (priority DESC, tie-break lowest key).
 4. git fetch origin; checkout the issue's branch if it exists, else origin/${vcs.integrationBranch}.
 5. Find AC-covering tests via the fix commit: `git log --all --grep="<KEY>"` → `git show --name-only <fixSHA>` and take its test files (unit-test locations: ${testing.unit.locations}). Run:
    - those AC-covering unit tests with ${testing.unit.runner} (correct package/dir),
    - if ${testing.e2e.runner} ≠ none: in ${testing.e2e.dir}, run ${testing.e2e.bddStep} then the e2e command filtered to the issue's ${testing.e2e.tagConvention} tag. No matching scenario → e2e N/A.
-   COVERAGE RULE: at least ONE test must exercise THIS bug's AC. If NONE → PARK: append "<KEY> # no AC coverage" to /tmp/my-bugs-verify-parked.txt and STOP — do NOT transition.
+   COVERAGE RULE: at least ONE test must exercise THIS bug's AC. If NONE → PARK: append "<KEY> # no AC coverage" to .claude/loops/state/my-bugs-verify-parked.txt and STOP — do NOT transition.
 6. Deploy gate — ONLY if ${ci.deployGate} is true: fix commit in origin/${vcs.integrationBranch} AND a SUCCESSFUL run of a relevant workflow from ${ci.deployWorkflows} includes it (fix SHA ancestor of run head SHA), via gh. If ${ci.deployGate} is false, skip this gate.
 7. ONLY IF all AC-covering tests GREEN AND (deploy gate passes or is off): transition issue→${states.verified} (by state name / id from ${issueTracker.transitionIds}) + set assignee per ${issueTracker.handoffAssignee} (e.g. reporter; leave as-is if none) + add a comment (tests [+ deploy run]).
 8. Gaps:
@@ -92,13 +93,13 @@ Autonomous "my bugs" — VERIFY TICK (any time, session active). First read .cla
 
 ```
 Autonomous "my stories" — STORY-VERIFY TICK (any time, session active). First read .claude/stack.md. ISSUE TYPES: ${issueTracker.issueTypes.story} (+ any extras in config) via ${issueTracker.myWorkQuery} — USER-SCOPED + active iteration. One issue per tick. AC VERIFICATION IS E2E-MANDATORY.
-1. Query the tracker (connection ${issueTracker.connection}): story-type issues in status ${states.verify} via ${issueTracker.myWorkQuery} (ORDER BY priority DESC, key ASC), EXCLUDING any key in /tmp/my-stories-verify-parked.txt. None → STOP.
+1. Query the tracker (connection ${issueTracker.connection}): story-type issues in status ${states.verify} via ${issueTracker.myWorkQuery} (ORDER BY priority DESC, key ASC), EXCLUDING any key in .claude/loops/state/my-stories-verify-parked.txt. None → STOP.
 2. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
 3. Pick ONE (priority DESC, tie-break lowest key).
 4. git fetch origin; checkout the issue's branch if it exists, else origin/${vcs.integrationBranch}.
 5. AC COVERAGE — E2E IS THE MANDATORY GATE (requires ${testing.e2e.runner} ≠ none). ACs MUST be verified by e2e scenarios tagged with the issue's ${testing.e2e.tagConvention}:
    - in ${testing.e2e.dir}, run ${testing.e2e.bddStep} then the e2e command filtered to that tag.
-   - COVERAGE RULE: at least ONE tagged e2e scenario MUST exist AND exercise this story's AC. If NONE → PARK: append "<KEY> # no e2e AC coverage" to /tmp/my-stories-verify-parked.txt and STOP. (Unit-only is NOT sufficient for a story.)
+   - COVERAGE RULE: at least ONE tagged e2e scenario MUST exist AND exercise this story's AC. If NONE → PARK: append "<KEY> # no e2e AC coverage" to .claude/loops/state/my-stories-verify-parked.txt and STOP. (Unit-only is NOT sufficient for a story.)
    - Also run the AC-covering unit tests for completeness (${testing.unit.runner}); a unit failure is still a failure (step 7), but unit alone never satisfies the AC gate.
 6. GATE = the tagged e2e scenarios are GREEN (and AC-covering unit tests GREEN). NO deploy gate. ONLY THEN: transition the story → ${states.verified} (by state name / id from ${issueTracker.transitionIds}) and add a brief human-voice comment listing the e2e + unit tests run. DO NOT change the assignee.
 7. Gaps: genuine test FAILURE that is the story's own code (re-run once) → PARK ("<KEY> # test fail: <one-line>") and STOP. TRANSIENT env/infra failure per ${recoveryNotes} → follow that runbook, don't park. Never mark a story failed for an env/infra reason.
@@ -110,10 +111,10 @@ Autonomous "my stories" — STORY-VERIFY TICK (any time, session active). First 
 ```
 Autonomous PR-REVIEW TICK — review open PRs in ${project.repo} that request MY review (reviewer ${vcs.prReview.reviewer})${vcs.prReview.watchAuthors ? ", authored by one of ${vcs.prReview.watchAuthors}" : ""}. First read .claude/stack.md. One PR per tick.
 1. List them: `gh pr list --state open --search "review-requested:${vcs.prReview.reviewer} [author:<each watchAuthors, if any>]" --json number,title,headRefName,headRefOid,updatedAt` (fallback: GitHub MCP search_pull_requests, query "repo:${project.repo} is:open is:pr review-requested:${vcs.prReview.reviewer} [author:…]"). With no watchAuthors, omit the author filter.
-2. Dedupe: skip any PR whose "<number>@<headRefOid>" is already in /tmp/pr-review-done.txt (re-review only if new commits pushed).
+2. Dedupe: skip any PR whose "<number>@<headRefOid>" is already in .claude/loops/state/pr-review-done.txt (re-review only if new commits pushed).
 3. None remain → STOP.
 4. Pick ONE (oldest updatedAt). Invoke the github-pr-review skill against that PR — review the diff cold, post findings as a PR review.
-5. After the review is posted, append "<number>@<headRefOid>" to /tmp/pr-review-done.txt.
+5. After the review is posted, append "<number>@<headRefOid>" to .claude/loops/state/pr-review-done.txt.
 One PR per tick. Review + post only — never merge or change code. Session-only.
 ```
 
@@ -123,14 +124,14 @@ One PR per tick. Review + post only — never merge or change code. Session-only
 Autonomous DEPLOY-FIX TICK (any time, session active). First read .claude/stack.md. Find a FAILED deployment among ${ci.deployWorkflows} and fix it. One deployment per tick. Full spec: .claude/loops/deploy-failure-fix.md
 
 1. git fetch origin. For each workflow in ${ci.deployWorkflows} (grouped by env), take its latest run on the env branch ${vcs.envBranches[env]}: `gh run list --workflow=<file> --branch=<env-branch> --limit 1 --json databaseId,headSha,conclusion,status,createdAt`. Failed = conclusion=failure (ignore in_progress/queued/success/cancelled). Envs in ${ci.humanGatedEnvs} are NOT watched.
-2. DEDUPE: skip any whose "<databaseId>" is in /tmp/deploy-fix-done.txt. None failed/unhandled → STOP.
+2. DEDUPE: skip any whose "<databaseId>" is in .claude/loops/state/deploy-fix-done.txt. None failed/unhandled → STOP.
 3. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
 4. Pick ONE failed run (newest createdAt). Diagnose from `gh run view <databaseId> --log-failed` + the workflow file. Check ${recoveryNotes} for known infra causes. Classify:
    - CODE/CONFIG fixable (build/type/lint, bad import, migration SQL, workflow yaml, env var referenced in repo, missing file) → fix it.
-   - PURE INFRA/secret/external (cloud creds, quota, registry/runner outage) → NOT code-fixable: append "<databaseId> # infra: <one-line>" to /tmp/deploy-fix-done.txt, report, STOP. Never edit secrets or override anything.
+   - PURE INFRA/secret/external (cloud creds, quota, registry/runner outage) → NOT code-fixable: append "<databaseId> # infra: <one-line>" to .claude/loops/state/deploy-fix-done.txt, report, STOP. Never edit secrets or override anything.
 5. To fix (CODE/CONFIG only): base branch = ${vcs.fixBaseBranches[env]} (fall back to the env branch). Create branch "fix/deploy-<scope>-<env>-<databaseId>". Make the MINIMAL root-cause fix; add a covering test where practical. Run ${commands.typecheck} && ${commands.lint} (+ targeted tests) — must pass.
 6. Commit per the tracker's no-ticket convention + Conventional Commit: "fix(<scope>): <what> (deploy <env> <workflow>)". Push. Open PR with `gh pr create --base <env-branch>`, body = failing run link + root cause + fix. Enable auto-merge per ${vcs.autoMerge}: `gh pr merge --auto --squash`. Never force-merge / override branch protection.
-7. Append "<databaseId> # fixed via PR #<n>" to /tmp/deploy-fix-done.txt. Return to the configured base branch, leave the tree clean. STOP.
+7. Append "<databaseId> # fixed via PR #<n>" to .claude/loops/state/deploy-fix-done.txt. Return to the configured base branch, leave the tree clean. STOP.
 ```
 
 ### Loop 6 — PR-SHEPHERD  (`cron: 6,16,26,36,46,56 * * * *`, recurring) — skip if ${project.username} is unset
@@ -139,14 +140,14 @@ Autonomous DEPLOY-FIX TICK (any time, session active). First read .claude/stack.
 Autonomous PR-SHEPHERD TICK (any time, session active). First read .claude/stack.md. Shepherd MY open PRs in ${project.repo} (author ${project.username}) — the loops (or I) opened them and nobody else will finish them. ONE action on ONE PR per tick. Full spec: .claude/loops/pr-shepherd.md
 
 1. git fetch origin. List my open PRs: `gh pr list --state open --author ${project.username} --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`; per candidate also read check status (`gh pr checks <n>`) and unresolved review threads (GraphQL reviewThreads, isResolved=false).
-2. DEDUPE: skip any PR whose "<number>@<headRefOid>" is in /tmp/pr-shepherd-done.txt (handled at that head; new commits or new unresolved threads re-qualify it).
+2. DEDUPE: skip any PR whose "<number>@<headRefOid>" is in .claude/loops/state/pr-shepherd-done.txt (handled at that head; new commits or new unresolved threads re-qualify it).
 3. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
 4. Pick ONE PR needing help, priority order (ties → oldest updatedAt): (a) REVIEW-RESPOND: reviewDecision=CHANGES_REQUESTED or unresolved threads; (b) CI-FIX: a required check FAILING; (c) CONFLICT: mergeable=CONFLICTING. None → STOP.
 5. Act — one action, one PR:
    - REVIEW-RESPOND: checkout the PR branch; address each actionable comment with the minimal change (assertion integrity — NEVER weaken or delete a test to satisfy a comment without stating why in the reply); for comments I disagree with, reply with technical reasoning and change nothing; reply to EVERY unresolved thread; run ${commands.typecheck} && ${commands.lint} + tests targeted at changed files — must pass; commit per the PR's ticket key + convention; push; re-request review from each reviewer who requested changes.
    - CI-FIX: run the pr-ci-failure-triage skill scoped to this PR — diagnose the failing check from `gh run view <id> --log-failed`, minimal root-cause fix on the PR branch, verify ${commands.typecheck} && ${commands.lint} (+ targeted tests), push. PURE INFRA (runner/secrets/quota/registry) → comment the diagnosis on the PR, record in the done-file, STOP. Never touch secrets.
    - CONFLICT: checkout the PR branch; `git merge origin/<PR base branch>`; resolve each conflict in the intent of BOTH sides (read both conflicting commits/tickets first — never blind-take ours/theirs); run ${commands.typecheck} && ${commands.lint} + tests touching conflicted files — must pass; commit the merge; push. Plain merge, never rebase + force-push.
-6. Verify the push landed; append "<number>@<headRefOid-BEFORE>" to /tmp/pr-shepherd-done.txt. Needs a HUMAN (unresolvable disagreement, pure infra, no safe fix) → say so in a PR comment AND record "# needs-human: <one-line>" in the done-file so it isn't retried (DAILY-REPORT surfaces these).
+6. Verify the push landed; append "<number>@<headRefOid-BEFORE>" to .claude/loops/state/pr-shepherd-done.txt. Needs a HUMAN (unresolvable disagreement, pure infra, no safe fix) → say so in a PR comment AND record "# needs-human: <one-line>" in the done-file so it isn't retried (DAILY-REPORT surfaces these).
 7. Return to the configured base branch, leave the tree clean. One PR per tick. Never force-push, never merge, never override branch protection, never touch a PR I didn't author. Session-only.
 ```
 
@@ -155,7 +156,7 @@ Autonomous PR-SHEPHERD TICK (any time, session active). First read .claude/stack
 ```
 Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/stack.md. READ-ONLY + one notification — never changes code, PRs, branches, or tracker state. Full spec: .claude/loops/daily-report.md
 
-1. Gather the last 24h: merged PRs (`gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago>"`); my open PRs + what each waits on (checks/review/conflict); tracker issues I transitioned or commented in the window (via ${issueTracker.myWorkQuery} + changelogs); reviews posted (/tmp/pr-review-done.txt); deploy incidents (/tmp/deploy-fix-done.txt); and ALL PARKED items — every line of /tmp/my-bugs-verify-parked.txt, /tmp/my-stories-verify-parked.txt, and every "# needs-human" line in /tmp/pr-shepherd-done.txt.
+1. Gather the last 24h: merged PRs (`gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago>"`); my open PRs + what each waits on (checks/review/conflict); tracker issues I transitioned or commented in the window (via ${issueTracker.myWorkQuery} + changelogs); reviews posted (.claude/loops/state/pr-review-done.txt); deploy incidents (.claude/loops/state/deploy-fix-done.txt); and ALL PARKED items — every line of .claude/loops/state/my-bugs-verify-parked.txt, .claude/loops/state/my-stories-verify-parked.txt, and every "# needs-human" line in .claude/loops/state/pr-shepherd-done.txt.
 2. Compose a short human-voice standup summary: Done (merged/verified) · In flight (open PRs + blocker) · Blocked/parked (each with its one-line reason — this section is the loop's reason to exist) · Incidents (deploy fixes/infra).
 3. Deliver: if ${reporting.destination} is set, post the summary there; ALWAYS also send a PushNotification with the one-line headline (e.g. "3 merged, 2 verified, 1 parked (KEY-123: no AC coverage)").
 4. Quiet-day rule: nothing happened AND nothing parked → send nothing. Parked items exist → ALWAYS report; they repeat daily until a human clears them. Session-only.

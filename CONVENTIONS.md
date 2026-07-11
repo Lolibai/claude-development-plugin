@@ -56,6 +56,16 @@ Rename and rewrite so they adapt to the configured tool (or no-op when it's `non
 > Renaming = add the new file (we can't delete here). When sweeping, create the generic file and
 > leave a one-line pointer in the old one, or have the user delete the old name after.
 
+## Loop state — per-project, never global
+
+All loop park/dedupe files live in the project's **`.claude/loops/state/`** (created by `onboarding`,
+gitignored). Never write loop state to `/tmp` or any path shared across projects: issue keys, PR
+numbers, and deploy run IDs are only unique *within* a repo, so a global file makes one project's
+state dedupe/park another's — and `/tmp` is wiped on reboot, silently un-parking everything.
+Current files: `my-bugs-verify-parked.txt`, `my-stories-verify-parked.txt`, `pr-review-done.txt`,
+`deploy-fix-done.txt`, `pr-shepherd-done.txt`. A new loop adds its file here and lists it in
+`stop-loop-stack`'s state-file table.
+
 ## Rules of thumb
 
 1. **Skip, don't ask.** If the config says a capability is `none`, the step is a no-op.
@@ -63,3 +73,4 @@ Rename and rewrite so they adapt to the configured tool (or no-op when it's `non
 3. **No personal data.** Usernames, repos, cloud ids, ticket numbers come from config only.
 4. **Keep the workflow logic.** Generalize *what tool*, not *how the loop reasons*.
 5. **Read once per run.** Load `.claude/stack.md` at the start of a skill, not per step.
+6. **State is per-project.** Loop state goes in `.claude/loops/state/`, never `/tmp` (see above).

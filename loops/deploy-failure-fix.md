@@ -38,14 +38,14 @@ Envs listed in `${ci.humanGatedEnvs}` (e.g. prod) are **never** watched — thos
 1. `git fetch origin`. For each workflow in `${ci.deployWorkflows}`, take the **latest** run on its env branch
    (`gh run list --workflow=<file> --branch=<env-branch> --limit 1 --json databaseId,headSha,conclusion,status,createdAt`).
    Failed = `conclusion == failure` (ignore in_progress/queued/success/cancelled).
-2. **Dedupe** on `databaseId` against `/tmp/deploy-fix-done.txt`. None left → **STOP**.
+2. **Dedupe** on `databaseId` against `.claude/loops/state/deploy-fix-done.txt`. None left → **STOP**.
 3. **Overlap guard** = `git status --porcelain` over the project's source/test dirs (ignoring `.claude/scheduled_tasks.lock`) dirty → **STOP** (another loop mid-fix).
 4. Pick **one** failed run (newest). Diagnose from `gh run view <id> --log-failed` + the workflow file, and classify:
    - **CODE/CONFIG** (build/type/lint error, bad import, migration SQL, workflow yaml, missing file, an env var referenced in the repo) → fix it.
    - **PURE INFRA** (cloud credentials, quota, registry/runner outage) → **not** code-fixable: record `# infra: …` in the done-file, report, **STOP**. Never touch secrets or override anything.
 5. **Fix (code/config only):** branch off the env's fix base → `fix/deploy-<scope>-<env>-<id>`; minimal root-cause fix; add a covering test where practical; `${commands.typecheck} && ${commands.lint}` (+ targeted tests) must pass.
 6. Commit per the tracker convention (no ticket → use the project's "chore/no-ticket" convention, e.g. `${KEY}-000` if Jira-style, or a plain Conventional Commit): `fix(<scope>): <what> (deploy <env> <workflow>)`; push; `gh pr create --base <env-branch>`; enable auto-merge per `${vcs.autoMerge}` (`gh pr merge --auto --squash` — merges only when green + protection satisfied; **never** force-merge).
-7. Append `"<id> # fixed via PR #<n>"` to `/tmp/deploy-fix-done.txt`; return to the configured base branch; leave tree clean. **STOP.**
+7. Append `"<id> # fixed via PR #<n>"` to `.claude/loops/state/deploy-fix-done.txt`; return to the configured base branch; leave tree clean. **STOP.**
 
 **One deployment per tick. Code/config → fix PR; pure infra → report only.**
 
@@ -56,7 +56,7 @@ Envs listed in `${ci.humanGatedEnvs}` (e.g. prod) are **never** watched — thos
 
 - **Stop:** `stop-loop-stack`, or `CronDelete <id>` (`CronList` for ids), or close the session.
 - **Re-register** (after editing this file / new session): re-run `launch-loop-stack`.
-- **Cadence:** edit the minute list. **Re-handle a run from scratch:** remove its id from `/tmp/deploy-fix-done.txt`.
+- **Cadence:** edit the minute list. **Re-handle a run from scratch:** remove its id from `.claude/loops/state/deploy-fix-done.txt`.
 - **Survive restarts:** register with `durable: true`. **Survive a closed terminal:** use a cloud `/schedule`.
 
 ## Caveats

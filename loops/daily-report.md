@@ -2,7 +2,7 @@
 
 A session-scoped cron that fires **once per weekday at end of day** and posts a short standup-style
 summary of everything the loop stack did in the last 24 hours — and, critically, everything it
-**parked**. The other loops park silently into files under `/tmp`; without this loop, "parked =
+**parked**. The other loops park silently into files under `.claude/loops/state/`; without this loop, "parked =
 needs a human" never actually reaches one. **Read-only + one notification: this loop never changes
 code, PRs, branches, or tracker state.** You own this file — edit it, then re-register.
 
@@ -26,10 +26,10 @@ code, PRs, branches, or tracker state.** You own this file — edit it, then re-
    - **Merged:** `gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago ISO date>"` in `${project.repo}`.
    - **In flight:** my open PRs with their state — checks green/red/pending, `reviewDecision`, `mergeable` (`gh pr list --state open --author ${project.username} --json ...`).
    - **Verified / handed off:** tracker issues I transitioned in the last 24h (via `${issueTracker.myWorkQuery}` + each issue's changelog, or my comments posted in the window).
-   - **Reviews posted:** entries in `/tmp/pr-review-done.txt` (compare against yesterday if a snapshot exists; otherwise report the file's PRs still open).
-   - **Deploy incidents:** entries in `/tmp/deploy-fix-done.txt` from the window (`# fixed via PR` vs `# infra`).
-   - **PARKED — the part that must not rot:** every line of `/tmp/my-bugs-verify-parked.txt`,
-     `/tmp/my-stories-verify-parked.txt`, and every `# needs-human` line in `/tmp/pr-shepherd-done.txt`.
+   - **Reviews posted:** entries in `.claude/loops/state/pr-review-done.txt` (compare against yesterday if a snapshot exists; otherwise report the file's PRs still open).
+   - **Deploy incidents:** entries in `.claude/loops/state/deploy-fix-done.txt` from the window (`# fixed via PR` vs `# infra`).
+   - **PARKED — the part that must not rot:** every line of `.claude/loops/state/my-bugs-verify-parked.txt`,
+     `.claude/loops/state/my-stories-verify-parked.txt`, and every `# needs-human` line in `.claude/loops/state/pr-shepherd-done.txt`.
 2. **Compose** a short, human-voice summary (plain sentences, no jargon-dump):
    - **Done** — merged PRs, issues verified/handed to QA.
    - **In flight** — open PRs and what each is waiting on (review / checks / conflict).

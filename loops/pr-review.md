@@ -26,12 +26,12 @@ A session-scoped cron that finds open PRs in the configured repo that request **
 1. List matching open PRs (build the search from config):
    `gh pr list --state open --search "review-requested:${reviewer} [author:<each watchAuthors>]" --json number,title,headRefName,headRefOid,updatedAt`
    (fallback: GitHub MCP `search_pull_requests`, query `repo:${project.repo} is:open is:pr review-requested:${reviewer} [author:…]`). With no `watchAuthors`, omit the author filter to review all your requested PRs.
-2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `/tmp/pr-review-done.txt`
+2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `.claude/loops/state/pr-review-done.txt`
    (already reviewed at that exact commit; re-reviews only if new commits are pushed).
 3. None remain → **stop**.
 4. Pick **one** (oldest `updatedAt`). Invoke **`github-pr-review`** against it — review the diff cold,
    post findings as a PR review.
-5. Append `"<number>@<headRefOid>"` to `/tmp/pr-review-done.txt`.
+5. Append `"<number>@<headRefOid>"` to `.claude/loops/state/pr-review-done.txt`.
 
 **One PR per tick. Review + post only — never merges or changes code.**
 
@@ -42,7 +42,7 @@ Submitting a review usually clears the `review-requested` flag, so the PR drops 
 - **Stop:** `stop-loop-stack`, or `CronDelete <id>` (`CronList` for ids), or close the session.
 - **Re-register** (after editing this file / new session): re-run `launch-loop-stack`.
 - **Cadence:** edit the minute field (`*/10` → `*/15`, …).
-- **Re-review from scratch:** delete `/tmp/pr-review-done.txt`.
+- **Re-review from scratch:** delete `.claude/loops/state/pr-review-done.txt`.
 - **Widen/narrow scope:** edit `${vcs.prReview}` in `.claude/stack.md` (add/remove authors, change reviewer), or tweak the `--search` query (add `label:<x>`, etc.).
 - **Survive restarts:** register with `durable: true`. **Survive a closed terminal:** use a cloud `/schedule`.
 

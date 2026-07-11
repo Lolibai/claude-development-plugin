@@ -307,6 +307,19 @@ fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.resolve(OUT, "stack.json"), JSON.stringify(cfg, null, 2) + "\n");
 fs.writeFileSync(path.resolve(OUT, "stack.md"), renderMd(cfg));
 
+// Per-project loop state (park/dedupe files). Lives inside the project so parallel projects
+// never share state (global /tmp would collide issue keys, PR numbers, and deploy run IDs
+// across repos — and gets wiped on reboot). Gitignored: state is machine-local, not shared.
+const stateDir = path.resolve(OUT, "loops", "state");
+fs.mkdirSync(stateDir, { recursive: true });
+const gitignorePath = path.resolve(ROOT, ".gitignore");
+const stateIgnore = ".claude/loops/state/";
+const gi = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, "utf8") : "";
+if (!gi.split("\n").some((l) => l.trim() === stateIgnore || l.trim() === stateIgnore.slice(0, -1))) {
+  fs.writeFileSync(gitignorePath, gi + (gi && !gi.endsWith("\n") ? "\n" : "") + stateIgnore + "\n");
+  console.log("  Added " + stateIgnore + " to .gitignore (per-project loop state).");
+}
+
 console.log("\nWrote " + path.relative(ROOT, path.resolve(OUT, "stack.json")) + " and " + path.relative(ROOT, path.resolve(OUT, "stack.md")));
 console.log("  The loop-stack skills now read this instead of asking project-specific questions.");
 console.log("  Review .claude/stack.md and tweak anything (especially issue-tracker states/transitions).");

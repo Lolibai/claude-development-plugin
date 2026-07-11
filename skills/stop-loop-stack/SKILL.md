@@ -42,7 +42,7 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
    - Every job ID deleted, grouped by loop name (FIX / VERIFY / STORY-VERIFY / PR-REVIEW / DEPLOY-FIX / PR-SHEPHERD / DAILY-REPORT / SYNC-INTEGRATION).
    - Any stack loop that was **already absent** (nothing to delete).
    - Any **non-stack** crons left untouched (list them so the user knows they're still scheduled).
-6. Do **not** delete the `/tmp` loop state files by default (see below).
+6. Do **not** delete the loop state files in `.claude/loops/state/` by default (see below).
 
 ## In-flight work — what stopping does and does NOT do
 
@@ -51,13 +51,13 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 
 ## State files (leave intact unless asked)
 
-The loops keep small dedupe / park files under `/tmp`. **Leave them in place** so a later `launch-loop-stack` resumes cleanly without re-parking or re-reviewing:
+The loops keep small dedupe / park files in the project's `.claude/loops/state/` (per-project + gitignored — never global `/tmp`, which is shared across projects and wiped on reboot). **Leave them in place** so a later `launch-loop-stack` resumes cleanly without re-parking or re-reviewing:
 
-- `/tmp/my-bugs-verify-parked.txt` — bugs VERIFY has parked (e.g. no AC coverage).
-- `/tmp/my-stories-verify-parked.txt` — stories STORY-VERIFY has parked (e.g. no e2e AC coverage).
-- `/tmp/pr-review-done.txt` — `"<number>@<headRefOid>"` of PRs already reviewed.
-- `/tmp/deploy-fix-done.txt` — deploy run IDs already handled.
-- `/tmp/pr-shepherd-done.txt` — `"<number>@<headRefOid>"` of my PRs already shepherded (incl. `# needs-human` escalations).
+- `.claude/loops/state/my-bugs-verify-parked.txt` — bugs VERIFY has parked (e.g. no AC coverage).
+- `.claude/loops/state/my-stories-verify-parked.txt` — stories STORY-VERIFY has parked (e.g. no e2e AC coverage).
+- `.claude/loops/state/pr-review-done.txt` — `"<number>@<headRefOid>"` of PRs already reviewed.
+- `.claude/loops/state/deploy-fix-done.txt` — deploy run IDs already handled.
+- `.claude/loops/state/pr-shepherd-done.txt` — `"<number>@<headRefOid>"` of my PRs already shepherded (incl. `# needs-human` escalations).
 
 Only clear these if the user explicitly asks for a **full reset** (e.g. "stop the loops and wipe their state"). If so, `rm -f` the files and say which were removed.
 
