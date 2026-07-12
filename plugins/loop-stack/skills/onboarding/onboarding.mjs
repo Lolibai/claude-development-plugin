@@ -320,6 +320,22 @@ if (!gi.split("\n").some((l) => l.trim() === stateIgnore || l.trim() === stateIg
   console.log("  Added " + stateIgnore + " to .gitignore (per-project loop state).");
 }
 
+// Materialize the loop specs into the project. Cron prompts reference .claude/loops/<spec>.md,
+// which must exist in the project regardless of how the stack is installed (plugin cache or
+// repo copy). Never overwrite: once copied, the project owns its specs ("you own this file").
+const specSrcDir = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "loops");
+try {
+  for (const f of fs.readdirSync(specSrcDir).filter((n) => n.endsWith(".md"))) {
+    const dst = path.resolve(OUT, "loops", f);
+    if (!fs.existsSync(dst)) {
+      fs.copyFileSync(path.resolve(specSrcDir, f), dst);
+      console.log("  Materialized loop spec " + path.relative(ROOT, dst) + ".");
+    }
+  }
+} catch {
+  console.log("  Note: could not find the stack's loops/ dir — copy loops/*.md into .claude/loops/ yourself.");
+}
+
 console.log("\nWrote " + path.relative(ROOT, path.resolve(OUT, "stack.json")) + " and " + path.relative(ROOT, path.resolve(OUT, "stack.md")));
 console.log("  The loop-stack skills now read this instead of asking project-specific questions.");
 console.log("  Review .claude/stack.md and tweak anything (especially issue-tracker states/transitions).");

@@ -25,7 +25,7 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 | **DEPLOY-FIX** | `Autonomous DEPLOY-FIX TICK` | `.claude/loops/deploy-failure-fix.md` |
 | **PR-SHEPHERD** | `Autonomous PR-SHEPHERD TICK` | `.claude/loops/pr-shepherd.md` |
 | **DAILY-REPORT** | `Autonomous DAILY-REPORT TICK` | `.claude/loops/daily-report.md` |
-| **SYNC-INTEGRATION** | `Autonomous SYNC-INTEGRATION TICK` | (keeps `${vcs.fixBaseBranches}` current with `${vcs.integrationBranch}`) |
+| **SYNC-INTEGRATION** | `Autonomous SYNC-INTEGRATION TICK` | `.claude/loops/sync-integration.md` |
 
 ## When to use
 
@@ -58,6 +58,7 @@ The loops keep small dedupe / park files in the project's `.claude/loops/state/`
 - `.claude/loops/state/pr-review-done.txt` — `"<number>@<headRefOid>"` of PRs already reviewed.
 - `.claude/loops/state/deploy-fix-done.txt` — deploy run IDs already handled.
 - `.claude/loops/state/pr-shepherd-done.txt` — `"<number>@<headRefOid>"` of my PRs already shepherded (incl. `# needs-human` escalations).
+- `.claude/loops/state/sync-integration-blocked.txt` — fix-base↔env branch pairs SYNC-INTEGRATION could not sync (conflict/protected).
 
 Only clear these if the user explicitly asks for a **full reset** (e.g. "stop the loops and wipe their state"). If so, `rm -f` the files and say which were removed.
 

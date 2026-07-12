@@ -24,7 +24,7 @@ Replace every hardcoded specific with the config reference. Mention the old conc
 | statuses "To Do / In Progress / Dev Testing / Ready for Testing" | `states.{todo,inProgress,verify,verified,done}` |
 | reassign to reporter | `handoffAssignee` |
 | `RescueId/RescueIdMain` | `project.repo` |
-| GitHub users `Lolibai`, `Bohdan-Demchuk` | `project.username`, `vcs.prReview.{reviewer,watchAuthors}` |
+| GitHub users `Lolibai`, `Bohdan-Demchuk` | self-identity: the host's authenticated user (`@me` for `gh`) — NEVER a committed username, or shared config makes every team member act on one person's PRs; `project.username` only as fallback for hosts without `@me`; teammate filters: `vcs.prReview.watchAuthors` |
 | `develop`, `stage`, `align-develop`, `align-stage` | `vcs.integrationBranch`, `envBranches`, `fixBaseBranches` |
 | `<type>/RESC-<n>` branch | `vcs.branchNaming` |
 | `pnpm` / `pnpm typecheck` / `pnpm lint` | `commands.*` |
@@ -63,7 +63,7 @@ gitignored). Never write loop state to `/tmp` or any path shared across projects
 numbers, and deploy run IDs are only unique *within* a repo, so a global file makes one project's
 state dedupe/park another's — and `/tmp` is wiped on reboot, silently un-parking everything.
 Current files: `my-bugs-verify-parked.txt`, `my-stories-verify-parked.txt`, `pr-review-done.txt`,
-`deploy-fix-done.txt`, `pr-shepherd-done.txt`. A new loop adds its file here and lists it in
+`deploy-fix-done.txt`, `pr-shepherd-done.txt`, `sync-integration-blocked.txt`. A new loop adds its file here and lists it in
 `stop-loop-stack`'s state-file table.
 
 ## Rules of thumb

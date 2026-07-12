@@ -15,7 +15,7 @@ code, PRs, branches, or tracker state.** You own this file — edit it, then re-
 
 | Setting | Value |
 |---|---|
-| Cadence | once per weekday (`58 16 * * 1-5` — 16:58, a free minute across the stack's staggered crons) |
+| Cadence | once per weekday (`59 16 * * 1-5` — 16:59, a free minute across the stack's staggered crons) |
 | When | end of the working day; edit the hour/minute to taste |
 | Persistence | **session-only** (`durable: false`) — dies when the session exits |
 | Auto-expiry | recurring cron auto-expires after **7 days** |
@@ -23,13 +23,13 @@ code, PRs, branches, or tracker state.** You own this file — edit it, then re-
 ## What each tick does
 
 1. **Gather the last 24h**, all read-only:
-   - **Merged:** `gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago ISO date>"` in `${project.repo}`.
-   - **In flight:** my open PRs with their state — checks green/red/pending, `reviewDecision`, `mergeable` (`gh pr list --state open --author ${project.username} --json ...`).
+   - **Merged:** `gh pr list --state merged --author "@me" --search "merged:>=<24h-ago ISO date>"` in `${project.repo}`.
+   - **In flight:** my open PRs with their state — checks green/red/pending, `reviewDecision`, `mergeable` (`gh pr list --state open --author "@me" --json ...`).
    - **Verified / handed off:** tracker issues I transitioned in the last 24h (via `${issueTracker.myWorkQuery}` + each issue's changelog, or my comments posted in the window).
    - **Reviews posted:** entries in `.claude/loops/state/pr-review-done.txt` (compare against yesterday if a snapshot exists; otherwise report the file's PRs still open).
    - **Deploy incidents:** entries in `.claude/loops/state/deploy-fix-done.txt` from the window (`# fixed via PR` vs `# infra`).
    - **PARKED — the part that must not rot:** every line of `.claude/loops/state/my-bugs-verify-parked.txt`,
-     `.claude/loops/state/my-stories-verify-parked.txt`, and every `# needs-human` line in `.claude/loops/state/pr-shepherd-done.txt`.
+     `.claude/loops/state/my-stories-verify-parked.txt`, every `# needs-human` line in `.claude/loops/state/pr-shepherd-done.txt`, and every line of `.claude/loops/state/sync-integration-blocked.txt` (fix-base branches a human must promote by hand).
 2. **Compose** a short, human-voice summary (plain sentences, no jargon-dump):
    - **Done** — merged PRs, issues verified/handed to QA.
    - **In flight** — open PRs and what each is waiting on (review / checks / conflict).
@@ -48,7 +48,7 @@ code, PRs, branches, or tracker state.** You own this file — edit it, then re-
 
 - **Stop:** `stop-loop-stack`, or `CronDelete <id>` (`CronList` for ids), or close the session.
 - **Re-register** (after editing this file / new session): re-run `launch-loop-stack`.
-- **Time:** edit the cron (`58 16 * * 1-5` → your end-of-day). Twice daily: add a morning entry, e.g. `58 8,16 * * 1-5`.
+- **Time:** edit the cron (`59 16 * * 1-5` → your end-of-day). Twice daily: add a morning entry, e.g. `59 8,16 * * 1-5`.
 - **Survive restarts:** register with `durable: true`. **Survive a closed terminal:** use a cloud `/schedule`.
 
 ## Related

@@ -6,7 +6,7 @@
 ## Project
 - VCS host: **github**
 - Repo: **YourOrg/YourRepo**
-- Your username: **your-handle**
+- Your username: **your-handle** (fallback only — gh commands use `@me`, the authenticated user, so shared config works for every team member)
 
 ## Issue tracker
 - Tool: **jira**

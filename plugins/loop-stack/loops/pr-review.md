@@ -4,8 +4,10 @@ A session-scoped cron that finds open PRs in the configured repo that request **
 (optionally narrowed to specific authors), and runs the **`github-pr-review`** skill on one per tick
 (reviews the diff, posts a PR review). You own this file — edit it, then re-register the cron.
 
-> **Config-driven.** Read `.claude/stack.md` first. Repo, reviewer handle, and watched authors come
-> from `${project.repo}` and `${vcs.prReview.{reviewer,watchAuthors}}`. If the reviewer handle is
+> **Config-driven.** Read `.claude/stack.md` first. Repo and watched authors come from
+> `${project.repo}` and `${vcs.prReview.watchAuthors}`; my reviewer identity is `@me` (the
+> authenticated `gh` user — never a committed handle, so shared config works for every team
+> member; `${vcs.prReview.reviewer}` is only the fallback for hosts without `@me`). If identity is
 > unset, run `onboarding` first. Works with any `${project.vcsHost}` that has a PR review concept;
 > the commands below assume GitHub (`gh`) — adapt to the configured host if different.
 
@@ -15,7 +17,7 @@ A session-scoped cron that finds open PRs in the configured repo that request **
 |---|---|
 | Cadence | every **10 minutes** (`*/10 * * * *`) |
 | When | **any time** the session is active (not day/hour gated) |
-| Scope | repo `${project.repo}`, review-requested `${vcs.prReview.reviewer}`, authors `${vcs.prReview.watchAuthors}` (empty = any author) |
+| Scope | repo `${project.repo}`, review-requested `@me` (the authenticated VCS user), authors `${vcs.prReview.watchAuthors}` (empty = any author) |
 | Persistence | **session-only** (`durable: false`) — dies when the session exits |
 | Auto-expiry | recurring cron auto-expires after **7 days** |
 
@@ -24,8 +26,8 @@ A session-scoped cron that finds open PRs in the configured repo that request **
 ## What each tick does
 
 1. List matching open PRs (build the search from config):
-   `gh pr list --state open --search "review-requested:${reviewer} [author:<each watchAuthors>]" --json number,title,headRefName,headRefOid,updatedAt`
-   (fallback: GitHub MCP `search_pull_requests`, query `repo:${project.repo} is:open is:pr review-requested:${reviewer} [author:…]`). With no `watchAuthors`, omit the author filter to review all your requested PRs.
+   `gh pr list --state open --search "review-requested:@me [author:<each watchAuthors>]" --json number,title,headRefName,headRefOid,updatedAt`
+   (fallback: GitHub MCP `search_pull_requests`, query `repo:${project.repo} is:open is:pr review-requested:<my login — resolve via gh api user -q .login> [author:…]`). With no `watchAuthors`, omit the author filter to review all your requested PRs.
 2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `.claude/loops/state/pr-review-done.txt`
    (already reviewed at that exact commit; re-reviews only if new commits are pushed).
 3. None remain → **stop**.

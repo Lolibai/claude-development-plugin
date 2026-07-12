@@ -34,9 +34,9 @@ If the tracker needs explicit transition ids (Jira), read them from `${issueTrac
 | Job | Cron | When | Does |
 |---|---|---|---|
 | **FIX** | `*/5 6-20 * * 1-5` | weekdays **06:00–20:55** | reconcile prior PR → else start one `${states.todo}` bug (`devfix` + auto-merge when green) |
-| **VERIFY** | `*/5 * * * *` | **any time** session is active | one `${states.verify}` bug → AC tests [+ deploy gate] → hand off |
+| **VERIFY** | `3-58/5 * * * *` | **any time** session is active | one `${states.verify}` bug → AC tests [+ deploy gate] → hand off |
 
-Both: every 5 min, **one action per tick**, session-only (`durable: false`), auto-expire after 7 days.
+Both: every 5 min (VERIFY staggered to :03/:08/… so the two never fire in the same instant), **one action per tick**, session-only (`durable: false`), auto-expire after 7 days.
 Job IDs are assigned by `launch-loop-stack` at registration (`CronList` to see them).
 
 > **Overlap guard** = `git status --porcelain` over the project's source/test dirs, ignoring the
