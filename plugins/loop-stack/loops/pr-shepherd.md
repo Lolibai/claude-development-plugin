@@ -7,8 +7,8 @@ only looks at check status and stops. This loop closes those three feedback gaps
 file — edit it, then re-register the cron.
 
 > **Config-driven.** Read `.claude/stack.md` first. Repo and my handle come from `${project.repo}`
-> and `${project.username}`; integration branch, commands, and test config from `${vcs.*}`,
-> `${commands.*}`, `${testing.*}`. If `${project.username}` is unset, run `onboarding` first — this
+> and my identity from the VCS host's authenticated user (`@me` for `gh` — never a committed username,
+> which would make every team member act on ONE person's PRs); `${project.username}` is only the fallback for hosts without an authenticated-user token. Branch model, commands, and test config from `${vcs.*}`, `${commands.*}`, `${testing.*}`. This
 > loop must never act on PRs that are not mine. Commands below assume GitHub (`gh`); adapt to the
 > configured `${project.vcsHost}` if different. If `.claude/stack.md` is missing, run `onboarding`
 > and stop.
@@ -32,7 +32,7 @@ waiting).
 |---|---|
 | Cadence | every **10 minutes** (`6,16,26,36,46,56 * * * *` — staggered off FIX/VERIFY `:00/:05`, STORY-VERIFY `:02`, DEPLOY-FIX `:04`, PR-REVIEW `:00/:10`) |
 | When | **any time** the session is active |
-| Scope | open PRs in `${project.repo}` **authored by `${project.username}`** — never anyone else's |
+| Scope | open PRs in `${project.repo}` **authored by `@me`** (the authenticated VCS user — works unchanged for every team member) — never anyone else's |
 | Persistence | **session-only** (`durable: false`) — dies when the session exits |
 | Auto-expiry | recurring cron auto-expires after **7 days** |
 
@@ -41,7 +41,7 @@ waiting).
 ## What each tick does
 
 1. `git fetch origin`. List my open PRs:
-   `gh pr list --state open --author ${project.username} --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`.
+   `gh pr list --state open --author "@me" --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`.
    For each candidate, also read check status (`gh pr checks <n>`) and unresolved review threads
    (GraphQL `reviewThreads(first: 50) { nodes { isResolved } }`).
 2. **Dedupe:** skip any PR whose `"<number>@<headRefOid>"` is already in `.claude/loops/state/pr-shepherd-done.txt`

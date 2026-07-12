@@ -13,8 +13,8 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 > tracker + `${issueTracker.myWorkQuery}`/states/transitions, `${vcs.*}` branch model, `${commands.*}`,
 > `${testing.*}`, `${ci.*}`) from that file. If it's missing, run the **`onboarding`** skill first and stop.
 > Only register loops the config supports: skip DEPLOY-FIX when `${ci.deployWorkflows}` is empty; skip
-> the e2e gate when `${testing.e2e.runner}` is `none`; skip PR-REVIEW when no reviewer handle is set;
-> skip PR-SHEPHERD when `${project.username}` is unset (it must never act on PRs that are not mine);
+> the e2e gate when `${testing.e2e.runner}` is `none`; skip PR-REVIEW only when the VCS host has no review-request concept (reviewer identity is `@me`, not a committed handle);
+> skip PR-SHEPHERD when the VCS host has no authenticated-user concept (identity is `@me` — the authenticated `gh` user, never a committed username, so shared config works for every team member);
 > skip SYNC-INTEGRATION when `${vcs.fixBaseBranches}` is empty or every fix base equals its env branch.
 > DAILY-REPORT always applies (push notification needs no config; `${reporting.destination}` is optional).
 
@@ -34,7 +34,7 @@ These are **session-only** (auto-expire after 7 days, stop when the session ends
 **Scoping invariant — USER-SCOPED + active iteration, never the whole backlog.** Every tracker-querying
 loop selects work with `${issueTracker.myWorkQuery}` (e.g. Jira `assignee = currentUser() AND sprint in
 openSprints()`), filtered by issue type + status. Don't broaden it to the historical backlog. PR-REVIEW
-is scoped by reviewer handle; DEPLOY-FIX by repo/branch.
+is scoped to the authenticated user (`@me`); DEPLOY-FIX by repo/branch.
 
 ## When to use
 
@@ -112,8 +112,8 @@ Autonomous "my stories" — STORY-VERIFY TICK (any time, session active). First 
 ### Loop 4 — PR-REVIEW  (`cron: */10 * * * *`, recurring)
 
 ```
-Autonomous PR-REVIEW TICK — review open PRs in ${project.repo} that request MY review (reviewer ${vcs.prReview.reviewer})${vcs.prReview.watchAuthors ? ", authored by one of ${vcs.prReview.watchAuthors}" : ""}. First read .claude/stack.md. One PR per tick.
-1. List them: `gh pr list --state open --search "review-requested:${vcs.prReview.reviewer} [author:<each watchAuthors, if any>]" --json number,title,headRefName,headRefOid,updatedAt` (fallback: GitHub MCP search_pull_requests, query "repo:${project.repo} is:open is:pr review-requested:${vcs.prReview.reviewer} [author:…]"). With no watchAuthors, omit the author filter.
+Autonomous PR-REVIEW TICK — review open PRs in ${project.repo} that request MY review ("@me" — the authenticated gh user)${vcs.prReview.watchAuthors ? ", authored by one of ${vcs.prReview.watchAuthors}" : ""}. First read .claude/stack.md. One PR per tick.
+1. List them: `gh pr list --state open --search "review-requested:@me [author:<each watchAuthors, if any>]" --json number,title,headRefName,headRefOid,updatedAt` (fallback: GitHub MCP search_pull_requests, query "repo:${project.repo} is:open is:pr review-requested:@me [author:…]"). With no watchAuthors, omit the author filter.
 2. Dedupe: skip any PR whose "<number>@<headRefOid>" is already in .claude/loops/state/pr-review-done.txt (re-review only if new commits pushed).
 3. None remain → STOP.
 4. Pick ONE (oldest updatedAt). Invoke the github-pr-review skill against that PR — review the diff cold, post findings as a PR review.
@@ -137,12 +137,12 @@ Autonomous DEPLOY-FIX TICK (any time, session active). First read .claude/stack.
 7. Append "<databaseId> # fixed via PR #<n>" to .claude/loops/state/deploy-fix-done.txt. Return to the configured base branch, leave the tree clean. STOP.
 ```
 
-### Loop 6 — PR-SHEPHERD  (`cron: 6,16,26,36,46,56 * * * *`, recurring) — skip if ${project.username} is unset
+### Loop 6 — PR-SHEPHERD  (`cron: 6,16,26,36,46,56 * * * *`, recurring) — skip if the VCS host has no authenticated-user concept
 
 ```
-Autonomous PR-SHEPHERD TICK (any time, session active). First read .claude/stack.md. Shepherd MY open PRs in ${project.repo} (author ${project.username}) — the loops (or I) opened them and nobody else will finish them. ONE action on ONE PR per tick. Full spec: .claude/loops/pr-shepherd.md
+Autonomous PR-SHEPHERD TICK (any time, session active). First read .claude/stack.md. Shepherd MY open PRs in ${project.repo} (author "@me" — the authenticated gh user, NOT a committed username) — the loops (or I) opened them and nobody else will finish them. ONE action on ONE PR per tick. Full spec: .claude/loops/pr-shepherd.md
 
-1. git fetch origin. List my open PRs: `gh pr list --state open --author ${project.username} --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`; per candidate also read check status (`gh pr checks <n>`) and unresolved review threads (GraphQL reviewThreads, isResolved=false).
+1. git fetch origin. List my open PRs: `gh pr list --state open --author "@me" --json number,title,headRefName,headRefOid,mergeable,reviewDecision,updatedAt`; per candidate also read check status (`gh pr checks <n>`) and unresolved review threads (GraphQL reviewThreads, isResolved=false).
 2. DEDUPE: skip any PR whose "<number>@<headRefOid>" is in .claude/loops/state/pr-shepherd-done.txt (handled at that head; new commits or new unresolved threads re-qualify it).
 3. Overlap guard: `git status --porcelain` over source/test dirs shows ANY change other than .claude/scheduled_tasks.lock → STOP.
 4. Pick ONE PR needing help, priority order (ties → oldest updatedAt): (a) REVIEW-RESPOND: reviewDecision=CHANGES_REQUESTED or unresolved threads; (b) CI-FIX: a required check FAILING; (c) CONFLICT: mergeable=CONFLICTING. None → STOP.
@@ -173,7 +173,7 @@ Autonomous SYNC-INTEGRATION TICK (any time, session active). First read .claude/
 ```
 Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/stack.md. READ-ONLY + one notification — never changes code, PRs, branches, or tracker state. Full spec: .claude/loops/daily-report.md
 
-1. Gather the last 24h: merged PRs (`gh pr list --state merged --author ${project.username} --search "merged:>=<24h-ago>"`); my open PRs + what each waits on (checks/review/conflict); tracker issues I transitioned or commented in the window (via ${issueTracker.myWorkQuery} + changelogs); reviews posted (.claude/loops/state/pr-review-done.txt); deploy incidents (.claude/loops/state/deploy-fix-done.txt); and ALL PARKED items — every line of .claude/loops/state/my-bugs-verify-parked.txt, .claude/loops/state/my-stories-verify-parked.txt, every "# needs-human" line in .claude/loops/state/pr-shepherd-done.txt, and every line of .claude/loops/state/sync-integration-blocked.txt.
+1. Gather the last 24h: merged PRs (`gh pr list --state merged --author "@me" --search "merged:>=<24h-ago>"`); my open PRs + what each waits on (checks/review/conflict); tracker issues I transitioned or commented in the window (via ${issueTracker.myWorkQuery} + changelogs); reviews posted (.claude/loops/state/pr-review-done.txt); deploy incidents (.claude/loops/state/deploy-fix-done.txt); and ALL PARKED items — every line of .claude/loops/state/my-bugs-verify-parked.txt, .claude/loops/state/my-stories-verify-parked.txt, every "# needs-human" line in .claude/loops/state/pr-shepherd-done.txt, and every line of .claude/loops/state/sync-integration-blocked.txt.
 2. Compose a short human-voice standup summary: Done (merged/verified) · In flight (open PRs + blocker) · Blocked/parked (each with its one-line reason — this section is the loop's reason to exist) · Incidents (deploy fixes/infra).
 3. Deliver: if ${reporting.destination} is set, post the summary there; ALWAYS also send a PushNotification with the one-line headline (e.g. "3 merged, 2 verified, 1 parked (KEY-123: no AC coverage)").
 4. Quiet-day rule: nothing happened AND nothing parked → send nothing. Parked items exist → ALWAYS report; they repeat daily until a human clears them. Session-only.

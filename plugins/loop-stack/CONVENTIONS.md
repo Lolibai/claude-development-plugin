@@ -24,7 +24,7 @@ Replace every hardcoded specific with the config reference. Mention the old conc
 | statuses "To Do / In Progress / Dev Testing / Ready for Testing" | `states.{todo,inProgress,verify,verified,done}` |
 | reassign to reporter | `handoffAssignee` |
 | `RescueId/RescueIdMain` | `project.repo` |
-| GitHub users `Lolibai`, `Bohdan-Demchuk` | `project.username`, `vcs.prReview.{reviewer,watchAuthors}` |
+| GitHub users `Lolibai`, `Bohdan-Demchuk` | self-identity: the host's authenticated user (`@me` for `gh`) — NEVER a committed username, or shared config makes every team member act on one person's PRs; `project.username` only as fallback for hosts without `@me`; teammate filters: `vcs.prReview.watchAuthors` |
 | `develop`, `stage`, `align-develop`, `align-stage` | `vcs.integrationBranch`, `envBranches`, `fixBaseBranches` |
 | `<type>/RESC-<n>` branch | `vcs.branchNaming` |
 | `pnpm` / `pnpm typecheck` / `pnpm lint` | `commands.*` |
