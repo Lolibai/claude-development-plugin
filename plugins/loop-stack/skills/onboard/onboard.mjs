@@ -179,7 +179,8 @@ function observeFiles(o) {
   for (const f of wfs) {
     if (!/deploy|release|publish/i.test(f)) continue;
     let txt = ""; try { txt = fs.readFileSync(path.resolve(ROOT, ".github/workflows", f), "utf8"); } catch {}
-    const bm = txt.match(/branches:\s*(?:\[([^\]]*)\]|((?:\n\s*-\s*.+)+))/);
+    const pushBlock = (txt.match(/(?:^|\n)\s*push:\s*\n((?:[ \t]+.*\n?)*)/) || [])[1] || "";
+    const bm = pushBlock.match(/branches:\s*(?:\[([^\]]*)\]|((?:\n\s*-\s*.+)+))/);
     const branches = bm ? (bm[1] !== undefined ? bm[1].split(",") : bm[2].split("\n").map((l) => l.replace(/\s*-\s*/, ""))).map((s) => s.trim().replace(/['"]/g, "")).filter(Boolean) : [];
     const env = envOf(f) || (branches[0] ? BR_ENV[branches[0]] || "" : "");
     (wfByEnv[env || "default"] = wfByEnv[env || "default"] || []).push(f);
