@@ -342,7 +342,7 @@ function defaultsFrom(d, prev) {
       testManagement: (p.testing && p.testing.testManagement) || "none",
     },
     memory: (p.memory) || { store: "none", collectionNaming: "", note: "" },
-    ci: { host: d.ci.host, deployWorkflows: (p.ci && p.ci.deployWorkflows) || { default: d.ci.deployWorkflows }, deployPlatforms: (p.ci && p.ci.deployPlatforms) || [], deployGate: (p.ci && typeof p.ci.deployGate === "boolean") ? p.ci.deployGate : false, humanGatedEnvs: (p.ci && p.ci.humanGatedEnvs) || ["prod"] },
+    ci: { host: (p.ci && p.ci.host) || d.ci.host, deployWorkflows: (p.ci && p.ci.deployWorkflows) || { default: d.ci.deployWorkflows }, deployPlatforms: (p.ci && p.ci.deployPlatforms) || [], deployGate: (p.ci && typeof p.ci.deployGate === "boolean") ? p.ci.deployGate : false, humanGatedEnvs: (p.ci && p.ci.humanGatedEnvs) || ["prod"] },
     design: (p.design) || { figma: false, note: "" },
     reporting: (p.reporting) || { daily: true, destination: "none" },
     compliance: (p.compliance) || "none",
