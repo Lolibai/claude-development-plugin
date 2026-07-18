@@ -25,6 +25,8 @@ these values being current.
 ## Non-goals
 
 - Continuous monitoring of PRs/deploys after onboarding (that's the loops' job).
+- Mining session history for runbook/recovery patterns (error→fix sequences) — v2;
+  v1 session mining is command extraction only.
 - Full GitLab/Bitbucket API parity in the script — the Claude gap-fill layer covers
   hosts the CLIs can't observe.
 - Changing the `stack.json`/`stack.md` consumer contract (readers keep working unchanged).
@@ -62,12 +64,28 @@ through `tryExec` (failure ⇒ empty ⇒ next layer). Observation can never fail
   `fly.toml`, `render.yaml`, `Procfile`, `Dockerfile`/`compose.yaml`, `serverless.yml`,
   Supabase config, `app.yaml`, `wrangler.toml`.
 
+**Layer 2.5 — session history (when present):**
+- Claude Code transcripts live at `~/.claude/projects/<encoded-project-path>/*.jsonl`
+  (path encoding: absolute project path with `/` and `.` replaced by `-`). Present only
+  on machines that already worked on the project — a bonus layer like `gh`, silently
+  skipped when absent.
+- Stream the most recent **20 sessions**, defensively extract Bash tool-call `command`
+  strings (skip any line that doesn't parse or match the expected shape — the format is
+  Claude Code internal and may change), frequency-rank them.
+- Use ranked commands to seed/confirm: `commands.*` (actual test/build/lint/typecheck
+  invocations beat package-manager guesses), `backend.migrateCmd`, `edge.localRestart`,
+  PR flow (`gh pr create/merge` flags → base branch, merge method), deploy commands.
+- Trust level: **hints only** — history shows what was *tried*, including failed
+  experiments. Session-sourced values seed empty fields and corroborate other layers;
+  in the re-run merge they never count as "observation disagrees" against an explicitly
+  set config value (i.e. they fill gaps but cannot raise conflicts on their own).
+
 **Layer 3 — Claude gap-fill (SKILL.md, not the script):** any field the report marks
 `unobserved` (no CLI, exotic host), Claude observes manually with whatever tools exist
 or asks the user; then writes the values into the config like any other answer.
 
 **Output:** an `observed` object with per-field values + `source` (`git`/`gh`/`files`/
-`unobserved`), printed as a short report; `--detect-only` includes it; stored as
+`sessions`/`unobserved`), printed as a short report; `--detect-only` includes it; stored as
 `_observed` (with an ISO timestamp) in `stack.json` for future re-run diffs.
 
 ### 2. `/init`-style re-runs (three-way merge)
@@ -123,6 +141,9 @@ zero-dependency single file):
    (`autoMerge: rebase`), re-run — warning printed, value kept; interactive re-run —
    per-field prompt appears.
 4. Degradation: `PATH` without `gh` → all layer-1 fields `unobserved`, script exits 0.
+5. Session mining: on this machine (transcripts exist for this repo) the report shows
+   `sessions`-sourced command hints; with `HOME` pointed at an empty dir the layer is
+   skipped silently. A transcript line of invalid JSON must not crash the scan.
 
 ## Rollout
 
