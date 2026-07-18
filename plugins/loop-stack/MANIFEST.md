@@ -2,7 +2,7 @@
 
 A portable set of skills, agents, commands, and loops that drive an autonomous
 "my work in the active iteration" workflow in **any** project. Nothing is hardcoded:
-project specifics live in **`.claude/stack.md`**, written once by the `onboard` skill,
+project specifics live in **`.claude/stack.md`**, written and refreshed by the `onboard` skill,
 and every file reads from it. See `CONVENTIONS.md` for the token → config mapping.
 
 ## Bring it to a project (3 steps)

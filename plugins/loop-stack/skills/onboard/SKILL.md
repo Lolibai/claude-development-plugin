@@ -1,13 +1,13 @@
 ---
 name: onboard
-description: One-time per-project setup for the loop stack. Detects the project's stack (VCS, issue tracker, package manager, frameworks, backend/DB, edge, tests, CI/deploy) and writes .claude/stack.md — the single config every other skill, agent, command, and loop reads instead of asking project-specific questions. Use when bringing the loop stack to a new project, when the user says "onboard this project", "set up the stack here", "configure for this repo", or when a skill reports that .claude/stack.md is missing.
+description: Per-project setup for the loop stack — run at setup and re-run any time, like /init. Observes the project's real PR system and deployment system (git history, gh, workflow files, past session commands) plus the rest of the stack (issue tracker, package manager, frameworks, backend/DB, edge, tests) and writes .claude/stack.md — the single config every other skill, agent, command, and loop reads. Re-runs merge fresh observations with the existing config and surface conflicts. Use when bringing the loop stack to a new project, when the user says "onboard this project", "re-run onboarding", "refresh the stack config", "re-onboard", or when a skill reports that .claude/stack.md is missing.
 ---
 
 # Onboarding
 
 ## Purpose
 
-Make the loop stack portable. Run this **once** in a project and it captures everything project-specific — issue tracker + how "my work" is queried, branch model, package manager, frameworks, backend/DB, edge runtime, test runners + e2e tag convention, CI/deploy workflows, design tool — into **`.claude/stack.md`** (plus a machine-readable `.claude/stack.json`).
+Make the loop stack portable. Run this at setup and **re-run any time** — like `/init`, re-running refreshes observations and merges them with your config (conflicts are prompted, never clobbered). It captures everything project-specific — issue tracker + how "my work" is queried, branch model, package manager, frameworks, backend/DB, edge runtime, test runners + e2e tag convention, CI/deploy workflows, design tool — into **`.claude/stack.md`** (plus a machine-readable `.claude/stack.json`).
 
 Every other skill/agent/command/loop reads `.claude/stack.md` for these values. Nothing is hardcoded, so the same stack works in any repo. Anything left `none`/empty means "this project doesn't use it — skip those steps."
 
@@ -32,7 +32,17 @@ Every other skill/agent/command/loop reads `.claude/stack.md` for these values. 
 
 2. If you can't run Node interactively, do **guided onboarding** instead: run `node onboard.mjs --detect-only`, then walk the user through each field (see the sections in the generated `stack.md`) and write `.claude/stack.md` + `.claude/stack.json` yourself from their answers.
 
-3. Open **`.claude/stack.md`** and confirm the issue-tracker section especially — workflow **state names** and (for Jira) **transition ids** can't be auto-detected and matter most to the loops.
+3. **Gap-fill what the script couldn't observe.** The run prints an observation report
+   (`key = value [source]` / `[unobserved]`). For each `unobserved` PR or deploy field
+   (e.g. non-GitHub host, no CLI auth), observe it yourself with whatever tools exist
+   (host CLI, API, asking the user) and write the value into `.claude/stack.md` +
+   `.claude/stack.json` like any other answer.
+
+4. **PR + deploy sections must not end up empty.** Every project has a PR system and a
+   deployment system. Do not finish onboarding with those sections `none`/`—` unless
+   the user explicitly confirms the project truly lacks one.
+
+5. Open **`.claude/stack.md`** and confirm the issue-tracker section especially — workflow **state names** and (for Jira) **transition ids** can't be auto-detected and matter most to the loops.
 
 ## After onboarding
 

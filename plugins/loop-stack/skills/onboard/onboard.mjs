@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// onboard.mjs — one-time, per-project stack onboarding for the loop stack.
+// onboard.mjs — per-project stack onboarding (re-runnable, /init-style) for the loop stack.
 //
 // Detects what it can from the repo, asks you to confirm/fill the rest, then writes
 //   .claude/stack.json   (canonical machine-readable config)
