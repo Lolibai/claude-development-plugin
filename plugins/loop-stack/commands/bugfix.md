@@ -1,6 +1,6 @@
 # Bugfix
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 Fix a bug by **aggressively validating the user's prompt** against the project's memory / knowledge store (`${memory.store}` — e.g. a vector store such as Qdrant, exposed via a memory MCP) **before and after** the fix. **Do not implement any code change until that validation is complete.** You may combine this with `gherkinfix` when the bug touches Gherkin/BDD.
 

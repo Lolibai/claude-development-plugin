@@ -11,7 +11,7 @@ Canonical, **config-driven** workflow for database schema changes. The reasoning
 > and `${backend.migrationsDir}` (plus the platform's migrate command, e.g. `${backend.migrateCmd}`).
 > If `${backend.platform}` is **`none`**, this skill is a **no-op** — tell the user there is no configured
 > database platform, so there is nothing to migrate, and stop. If a needed capability is otherwise
-> `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the **`onboarding`** skill and stop.
+> `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the **`onboard`** skill and stop.
 > Concrete tools below (Supabase, Prisma, Postgres, Drizzle) are **examples** — match the configured platform.
 
 ## Two files, always

@@ -1,6 +1,6 @@
 # Implement fix
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 Apply the fix in code. Do not only suggest, describe, or plan—change the code and deliver a complete, mergeable result.
 

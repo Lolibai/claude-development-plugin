@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// onboarding.mjs — one-time, per-project stack onboarding for the loop stack.
+// onboard.mjs — one-time, per-project stack onboarding for the loop stack.
 //
 // Detects what it can from the repo, asks you to confirm/fill the rest, then writes
 //   .claude/stack.json   (canonical machine-readable config)
@@ -9,11 +9,11 @@
 // instead of asking project-specific questions. Re-run any time to update it.
 //
 // Usage:
-//   node onboarding.mjs                 interactive (default)
-//   node onboarding.mjs --detect-only   print what was auto-detected, write nothing
-//   node onboarding.mjs --non-interactive [--yes]   use detected + defaults, no prompts
-//   node onboarding.mjs --out <dir>     output dir (default: .claude)
-//   node onboarding.mjs --root <dir>    project root to scan (default: cwd)
+//   node onboard.mjs                 interactive (default)
+//   node onboard.mjs --detect-only   print what was auto-detected, write nothing
+//   node onboard.mjs --non-interactive [--yes]   use detected + defaults, no prompts
+//   node onboard.mjs --out <dir>     output dir (default: .claude)
+//   node onboard.mjs --root <dir>    project root to scan (default: cwd)
 //
 // No external dependencies — Node built-ins only.
 
@@ -349,8 +349,8 @@ if (!fs.existsSync(claudeMdPath)) {
     fs.copyFileSync(tplPath, claudeMdPath);
     console.log("  Wrote " + path.relative(ROOT, claudeMdPath) + " (universal entry point; reads .claude/stack.md).");
   } catch {
-    console.log("  Note: copy skills/onboarding/CLAUDE.template.md to ./CLAUDE.md for the universal entry point.");
+    console.log("  Note: copy skills/onboard/CLAUDE.template.md to ./CLAUDE.md for the universal entry point.");
   }
 } else {
-  console.log("  CLAUDE.md already exists — left untouched. See skills/onboarding/CLAUDE.template.md for the universal version.");
+  console.log("  CLAUDE.md already exists — left untouched. See skills/onboard/CLAUDE.template.md for the universal version.");
 }

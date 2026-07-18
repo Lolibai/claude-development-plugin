@@ -1,7 +1,7 @@
 # Onboarding: live PR/deploy observation + `/init`-style re-runs — design
 
 Date: 2026-07-18
-Component: `plugins/loop-stack/skills/onboarding/` (`onboarding.mjs`, `SKILL.md`)
+Component: `plugins/loop-stack/skills/onboard/` (`onboard.mjs`, `SKILL.md`)
 
 ## Problem
 
@@ -31,7 +31,7 @@ these values being current.
 
 ## Design
 
-### 1. `observe()` phase in `onboarding.mjs`
+### 1. `observe()` phase in `onboard.mjs`
 
 Runs after `detect()`. Layered, strongest-available source wins; every probe goes
 through `tryExec` (failure ⇒ empty ⇒ next layer). Observation can never fail onboarding.

@@ -9,7 +9,7 @@ description: Clarify requirements using the project's knowledge store and issue 
 
 Clarify what needs to be fixed (requirements, AC, the tracked issue) and identify the exact feature files, step files, and dependencies so the fix targets the right scope.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 Use the configured knowledge/requirements store `${memory.store}` (e.g. Qdrant, a vector DB) for requirements/AC lookups, the issue tracker `${issueTracker.tool}` (e.g. Jira) for the ticket, and the E2E layout in `${testing.e2e.*}` for feature/step paths. If a capability is `none`, skip it and fall back to repo scanning + the user prompt.
 

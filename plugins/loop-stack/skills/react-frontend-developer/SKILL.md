@@ -13,7 +13,7 @@ Specializes in frontend feature development, following the project's conventions
 > `${frontend.frameworks}` (e.g. react, angular), `${frontend.apps}`, the data-fetching/routing libraries the
 > project uses, and `${commands.*}`. Never assume a specific UI/data library — read what the project actually
 > uses. If a needed capability is `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the
-> **`onboarding`** skill and stop. Concrete tools named below (React, TanStack/React Query, React Router,
+> **`onboard`** skill and stop. Concrete tools named below (React, TanStack/React Query, React Router,
 > tRPC, react-hook-form, MUI) are **examples** — match the configured stack.
 
 ## When to Use

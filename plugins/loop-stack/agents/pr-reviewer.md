@@ -23,7 +23,7 @@ Independent, cold-start reviewer. Fetches the PR diff directly from the VCS host
 > The tool entries above are wired to whichever VCS/tracker MCPs the project configured (e.g. GitHub +
 > Jira/Confluence); use the equivalents for the configured tools. If a needed capability is `none`, skip
 > those steps (e.g. no linked-docs platform → skip that fetch; no compliance regime → skip that lens). If
-> the config is missing, run the `onboarding` skill and stop.
+> the config is missing, run the `onboard` skill and stop.
 
 ## Evidence Mode — non-negotiable
 

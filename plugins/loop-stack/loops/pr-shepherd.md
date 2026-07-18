@@ -10,7 +10,7 @@ file — edit it, then re-register the cron.
 > and my identity from the VCS host's authenticated user (`@me` for `gh` — never a committed username,
 > which would make every team member act on ONE person's PRs); `${project.username}` is only the fallback for hosts without an authenticated-user token. Branch model, commands, and test config from `${vcs.*}`, `${commands.*}`, `${testing.*}`. This
 > loop must never act on PRs that are not mine. Commands below assume GitHub (`gh`); adapt to the
-> configured `${project.vcsHost}` if different. If `.claude/stack.md` is missing, run `onboarding`
+> configured `${project.vcsHost}` if different. If `.claude/stack.md` is missing, run `onboard`
 > and stop.
 
 ## The three actions (priority order — pick the first that applies)

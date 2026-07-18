@@ -8,7 +8,7 @@ A session-scoped cron that finds open PRs in the configured repo that request **
 > `${project.repo}` and `${vcs.prReview.watchAuthors}`; my reviewer identity is `@me` (the
 > authenticated `gh` user — never a committed handle, so shared config works for every team
 > member; `${vcs.prReview.reviewer}` is only the fallback for hosts without `@me`). If identity is
-> unset, run `onboarding` first. Works with any `${project.vcsHost}` that has a PR review concept;
+> unset, run `onboard` first. Works with any `${project.vcsHost}` that has a PR review concept;
 > the commands below assume GitHub (`gh`) — adapt to the configured host if different.
 
 ## Schedule

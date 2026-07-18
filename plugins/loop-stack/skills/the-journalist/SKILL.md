@@ -9,7 +9,7 @@ description: Persists a durable record of a decision, incident, or learning acro
 > target comes from `${memory.store}` (e.g. a vector DB like Qdrant/pgvector, or a Memory MCP); the
 > markdown journal location and tagging conventions come from the config too. If `${memory.store}` is
 > `none`, write the markdown journal only and skip every memory-writeback step. If `.claude/stack.md` is
-> missing, run the **`onboarding`** skill and stop.
+> missing, run the **`onboard`** skill and stop.
 
 ## Purpose
 

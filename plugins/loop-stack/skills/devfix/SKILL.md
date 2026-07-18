@@ -7,7 +7,7 @@ description: Use when the user invokes devfix, bugfix, gherkinfix, or issuefix; 
 
 Fix bugs end-to-end **test-first**: validate intent → **ask the project memory store for lessons** → pull issue-tracker + docs ACs → **write the failing test that reproduces the bug (RED)** → implement the minimal fix (GREEN) → refactor → test → review → push → **store the new lesson**. Land the fix — never end with plans or pseudocode.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 >
 > Every concrete tool named below is only a **parenthetical example**. The actual issue tracker comes from `${issueTracker.tool}` (e.g. Jira, GitHub Issues, Linear), the docs source from its linked pages (e.g. Confluence), the memory/knowledge store from `${memory.store}` (e.g. Qdrant), the test-management sync from `${testing.testManagement}` (e.g. Zephyr), the runners from `${testing.*}`, commands from `${commands.*}`, branch model from `${vcs.*}`, design source from `${design.figma}`, and CI/deploy from `${ci.*}`.
 

@@ -1,6 +1,6 @@
 # Push commit
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 Commit **all** changes with a message that follows the project's commit convention (`${commands.commitConvention}` — e.g. Conventional Commits, validated by a commit-lint config such as `commitlint.config.*` if the repo has one), then push to the current branch's remote.
 

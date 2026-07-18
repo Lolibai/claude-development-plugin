@@ -13,7 +13,7 @@ Before implementing or advising, **load** existing context from the project's kn
 > (e.g. a vector store such as Qdrant, an MCP-backed memory, or `none`). If `${memory.store}` is **`none`**,
 > there is no configured knowledge store — **fall back to plain file/notes memory**: read any project notes
 > under `.claude/` (e.g. `.claude/memory/*.md`, decision logs) at task start, and append new decisions there
-> after. Don't invent a tool. If `.claude/stack.md` is missing, run the **`onboarding`** skill and stop.
+> after. Don't invent a tool. If `.claude/stack.md` is missing, run the **`onboard`** skill and stop.
 > Concrete stores named below are **examples** — match `${memory.store}`.
 
 ## When to Use

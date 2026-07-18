@@ -7,7 +7,7 @@ You own this file — edit it, then re-register the jobs (see *Start / Stop*).
 > its query/states/transitions, branch model, package manager, test runners, e2e tag, deploy gate —
 > come from there. Notation `${a.b}` = that value from the config. If a referenced capability is
 > `none` (e.g. no deploy gate, no e2e), **skip** that step. If `.claude/stack.md` is missing, run the
-> `onboarding` skill and stop.
+> `onboard` skill and stop.
 
 **Scope is USER-SCOPED + the active iteration, never project-scoped.** Selection uses
 `${issueTracker.myWorkQuery}` (e.g. for Jira: `assignee = currentUser() AND sprint in openSprints()`),

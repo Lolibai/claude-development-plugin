@@ -9,7 +9,7 @@ description: At Gherkin fix command start, load the project's memory/knowledge s
 
 Before doing any Gherkin fix work, check for existing implementation memory so the agent can build on or replace search/RAG output based on prior bugs and tracked implementations.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 This skill reads from whatever memory/knowledge store is configured in `${memory.store}` (e.g. Qdrant, a vector DB, a notes index) and the issue tracker in `${issueTracker.tool}` (e.g. Jira). If `${memory.store}` is `none`, skip the memory load and rely on the issue + user prompt. If `${issueTracker.tool}` is `none`, build the query from the user's prompt alone.
 

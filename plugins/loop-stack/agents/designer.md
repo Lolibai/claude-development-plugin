@@ -14,7 +14,7 @@ Read-only design mapper. Translates the **parent-fetched** design artifacts (scr
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** The design tool
 > (`${design.figma}`) and the frontend stack + shared-component conventions (`${frontend.*}`) come from
 > config. If no design tool is configured (`${design.figma}` is `none`), there is nothing to map — report
-> that and stop. If the config is missing, run the `onboarding` skill and stop.
+> that and stop. If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

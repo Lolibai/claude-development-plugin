@@ -12,7 +12,7 @@ Canonical, **config-driven** guide for every component in the frontend monorepo.
 > (the apps/packages, e.g. manager/admin/card/landing), the unit runner `${testing.unit.runner}`, and
 > `${commands.*}`. Never assume a specific UI library — read the design system the project actually uses. If a
 > needed capability is `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the
-> **`onboarding`** skill and stop. Concrete tools in the examples below (MUI, Tailwind, react-hook-form,
+> **`onboard`** skill and stop. Concrete tools in the examples below (MUI, Tailwind, react-hook-form,
 > Vitest) are **examples** — match the configured frontend stack.
 
 ## Hybrid rule (global, always-on)

@@ -9,7 +9,7 @@ description: Systematically verify code quality after implementation by running 
 
 Systematically verify code quality after implementation by running builds, tests, lints, and reviewing for common mistakes.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 All build/lint/test commands come from `${commands.*}` (e.g. pnpm/npm/yarn `build`, `typecheck`, `lint`, `test`). Run them from the appropriate package/dir for the changed code. Skip any step whose command is `none`.
 

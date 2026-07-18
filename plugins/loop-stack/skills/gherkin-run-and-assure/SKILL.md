@@ -9,7 +9,7 @@ description: Run all related API, E2E, and unit tests for the Gherkin fix; verif
 
 Run every test and scenario related to the fix, fix any failures, and **assure the user** that all related tests and scenarios pass. The Gherkin fix command is not complete until this is done.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 Use the configured runners and locations: the E2E runner/dir/BDD step in `${testing.e2e.*}` (e.g. Playwright + `npx bddgen`), the unit runner/locations in `${testing.unit.*}`, and the package manager/scripts in `${commands.*}`. Skip any test type whose runner is `none`.
 

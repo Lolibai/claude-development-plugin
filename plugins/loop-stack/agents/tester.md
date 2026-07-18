@@ -19,7 +19,7 @@ Test executor and coverage verifier. Runs lint/typecheck, unit tests, API BDD, a
 > bring-up (`${backend.*}`, `${edge.*}`), and `${recoveryNotes}` for known infra failures. If a needed
 > capability is `none`, skip those steps (e.g. `${testing.e2e.runner}` is `none` → no UI E2E; no
 > `${backend.platform}`/`${edge.platform}` → no local stack bring-up). If the config is missing, run the
-> `onboarding` skill and stop.
+> `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

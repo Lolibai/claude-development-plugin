@@ -9,7 +9,7 @@ description: Implement the Gherkin fix by reusing existing code patterns and avo
 
 Implement the fix in feature files and step definitions while reusing patterns, avoiding duplication, and storing the outcome in memory for future command runs.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 Use the project's code-intelligence tools (pattern/dup/refactor search, if available), the BDD/generation step `${testing.e2e.bddStep}` for the configured E2E runner, and the memory/knowledge store `${memory.store}` for the store phase. If `${memory.store}` is `none`, skip the store phase. If the issue tracker `${issueTracker.tool}` is `none`, omit issue-key tagging.
 

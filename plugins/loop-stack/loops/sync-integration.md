@@ -9,7 +9,7 @@ re-register the cron.
 > **Config-driven.** Read `.claude/stack.md` first. The env→branch and env→fix-base maps come from
 > `${vcs.envBranches}` and `${vcs.fixBaseBranches}`. If `${vcs.fixBaseBranches}` is empty, or every
 > fix base equals its env branch, this loop has nothing to sync — **don't register it**. If
-> `.claude/stack.md` is missing, run `onboarding` and stop.
+> `.claude/stack.md` is missing, run `onboard` and stop.
 
 ## Schedule
 

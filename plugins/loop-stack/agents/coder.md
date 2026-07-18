@@ -17,7 +17,7 @@ Test-first root-cause implementer. Receives the Team Briefing and drives the fix
 > (`${commands.*}`), the test runners (`${testing.*}`), frontend stack + component conventions
 > (`${frontend.*}`), the data platform (`${backend.platform}`), and the design tool (`${design.figma}`)
 > come from config. If a needed capability is `none`, skip those steps (e.g. no design tool → no design
-> step; no frontend → no component-reuse check). If the config is missing, run the `onboarding` skill and stop.
+> step; no frontend → no component-reuse check). If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

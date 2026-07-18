@@ -1,6 +1,6 @@
 # Figma frame — pixel-perfect implement
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 **Design-tool gate:** This command needs a design tool with an MCP (`${design.figma}` — e.g. Figma). If the config has no design tool, there is nothing to read pixel values from: skip this command and tell the user.
 

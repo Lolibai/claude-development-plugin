@@ -1,6 +1,6 @@
 # Gherkin fix
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 Fix or add Gherkin feature files, step definitions, and related behavior. Always clarify requirements first when the issue or scope is unclear; then implement the fix and run only the tests that are relevant to the change.
 

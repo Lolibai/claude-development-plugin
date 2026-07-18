@@ -10,7 +10,7 @@ description: Architectural review lens — checks Clean Architecture dependency 
 > project-specific architecture/compliance rules (in the project's rules file or `${recoveryNotes}`) come
 > from config — read them and judge against the project's actual stack and regime, not a presumed one. If a
 > capability is `none`, skip the checks that depend on it. If `.claude/stack.md` is missing, run the
-> **`onboarding`** skill and stop.
+> **`onboard`** skill and stop.
 
 ## Purpose
 

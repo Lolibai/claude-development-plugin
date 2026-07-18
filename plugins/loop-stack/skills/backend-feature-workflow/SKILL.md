@@ -11,7 +11,7 @@ Canonical, **config-driven** guide for adding a backend feature. The layering, D
 > `${edge.platform}`, the backend source dirs, and `${commands.*}` (typecheck/lint/build/test). Never hardcode
 > a framework, ORM, or RPC library. If a needed capability is `none`/empty, skip those steps (e.g. if
 > `${edge.platform}` is `none`, ignore the serverless-function-specific wiring and run the router inside your
-> normal server). If `.claude/stack.md` is missing, run the **`onboarding`** skill and stop. Concrete tools in
+> normal server). If `.claude/stack.md` is missing, run the **`onboard`** skill and stop. Concrete tools in
 > the examples below (tRPC, Zod, Supabase, WebCrypto, Deno) are **examples** — match the configured stack.
 
 ## When to use

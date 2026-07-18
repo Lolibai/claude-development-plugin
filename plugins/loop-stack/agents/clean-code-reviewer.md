@@ -13,7 +13,7 @@ tools:
 One seat on the concurrent review panel. Reviews the diff through the **Clean Code lens only** and returns an independent vote. Does NOT implement changes — findings go to the Resolver via the coordinator. Other seats own architecture/compliance (Seat B) and test integrity (Seat C); stay in your lane so the panel catches distinct failure modes.
 
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed
-> capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 > This seat's lens is tool-agnostic, but `file:line` paths and conventions come from the configured project.
 
 ## Input (from parent — Team Briefing)

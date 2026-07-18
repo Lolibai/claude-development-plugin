@@ -9,7 +9,7 @@ description: Picks and runs the right test suite (backend/unit, API/integration,
 
 Runs appropriate test suites based on code changes and user requests.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 All runners, commands, and locations come from config: the package manager + scripts in `${commands.*}`, the unit runner/locations in `${testing.unit.*}` (e.g. Vitest, Jest), the E2E runner/dir in `${testing.e2e.*}` (e.g. Playwright), and the project layout (`${backend.*}`, `${edge.*}`, `${frontend.apps}`). If a given test type is `none`, skip it.
 

@@ -12,7 +12,7 @@ Four-phase workflow. **Do not start implementation until Phase 4 is complete.**
 > `${frontend.apps}`, and `${memory.store}`. If `${design.figma}` is **`none`**, this skill is a **no-op** —
 > there is no configured design tool to plan from, so ask the user to paste a screenshot/spec and plan from
 > that (or stop). If a needed capability is otherwise `none`/empty, skip those steps. If `.claude/stack.md` is
-> missing, run the **`onboarding`** skill and stop. Concrete tools named below (Figma + its MCP, MUI, Tailwind)
+> missing, run the **`onboard`** skill and stop. Concrete tools named below (Figma + its MCP, MUI, Tailwind)
 > are **examples** — match the configured stack.
 
 ---

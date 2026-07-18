@@ -15,7 +15,7 @@ Concern-driven finalizer. Receives the consolidated finding list (failing scenar
 
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** Commands
 > (`${commands.*}`) and conventions come from config. If a needed capability is `none`, skip those steps.
-> If the config is missing, run the `onboarding` skill and stop.
+> If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

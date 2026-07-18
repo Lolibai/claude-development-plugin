@@ -14,7 +14,7 @@ Read-only codebase surveyor. Maps what exists, what changed, and whether layer b
 > (`${testing.*}`), the compliance regime (`${compliance}`), and the issue key prefix
 > (`${issueTracker.keyPrefix}`) come from config. If a needed capability is `none`, skip those steps
 > (e.g. no compliance regime → skip the sensitive-data surface check). If the config is missing, run the
-> `onboarding` skill and stop.
+> `onboard` skill and stop.
 
 ## Input (from parent)
 

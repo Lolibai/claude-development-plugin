@@ -7,7 +7,7 @@ description: Move an issue to its "in review" state via the configured issue tra
 
 Flip an issue's status to its **in-review** state with zero ceremony. Pairs with `/pushcommit` and `/create-pr` so a finished bugfix ends in the right column without manual UI clicks.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 This skill drives the issue tracker named in `${issueTracker.tool}` (e.g. Jira, GitHub Issues, Linear) via its connector. If `${issueTracker.tool}` is `none`, there is no status to flip — report that and stop. All keys, states, and connection details below come from config, never hardcoded.
 

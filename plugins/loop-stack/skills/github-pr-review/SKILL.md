@@ -11,7 +11,7 @@ description: Use when reviewing a PR, leaving PR feedback, triaging a pull reque
 > memory/knowledge store (`${memory.store}`), and the frontend/backend stack (`${frontend.*}`, `${backend.*}`)
 > all come from config. This skill is intentionally **GitHub-centric** (it is GitHub-named) — but if a needed
 > capability is `none` (no issue tracker, no memory store, no spec/wiki), **skip** those steps; don't invent
-> one. If `.claude/stack.md` is missing, run the **`onboarding`** skill and stop.
+> one. If `.claude/stack.md` is missing, run the **`onboard`** skill and stop.
 
 ## When to Use
 

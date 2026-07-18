@@ -8,7 +8,7 @@ code, PRs, branches, or tracker state.** You own this file — edit it, then re-
 
 > **Config-driven.** Read `.claude/stack.md` first. Repo/handle from `${project.*}`, tracker from
 > `${issueTracker.*}`, destination from `${reporting.*}`. If `${reporting.destination}` is `none`
-> or unset, deliver via push notification only. If `.claude/stack.md` is missing, run `onboarding`
+> or unset, deliver via push notification only. If `.claude/stack.md` is missing, run `onboard`
 > and stop.
 
 ## Schedule

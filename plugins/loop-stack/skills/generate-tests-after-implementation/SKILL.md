@@ -9,7 +9,7 @@ description: Generate comprehensive tests immediately after implementing code to
 
 Generate comprehensive tests immediately after implementing code to verify correctness and prevent hallucinations.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 Use the configured runners and locations: unit runner `${testing.unit.runner}` (e.g. Vitest, Jest) at `${testing.unit.locations}`, E2E runner `${testing.e2e.runner}` (e.g. Playwright) at `${testing.e2e.dir}`, and the frontend stack in `${frontend.*}` (e.g. a React + Testing Library setup). Skip any test type whose runner is `none`.
 

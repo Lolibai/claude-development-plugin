@@ -12,7 +12,7 @@ Canonical, **config-driven** reference for making a serverless or edge function 
 > for known runtime/infra failure modes. If `${edge.platform}` is **`none`**, this skill is a **no-op** —
 > tell the user there are no configured serverless/edge functions, so there is nothing to do, and stop.
 > If a needed capability is otherwise `none`/empty, skip those steps. If `.claude/stack.md` is missing,
-> run the **`onboarding`** skill and stop. Concrete runtimes below (Supabase Edge on Deno, AWS Lambda,
+> run the **`onboard`** skill and stop. Concrete runtimes below (Supabase Edge on Deno, AWS Lambda,
 > Netlify Functions) are **examples** — match `${edge.platform}`.
 
 ## Per-function dependency / import setup (mandatory)

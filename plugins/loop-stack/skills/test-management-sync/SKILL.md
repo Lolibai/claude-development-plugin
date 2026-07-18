@@ -31,7 +31,7 @@ Deliver **one feature file per management case** under a per-epic mirror subfold
 > If `${testing.testManagement}` is **`none`**, this skill is a **no-op** — there is no configured
 > test-management system to sync with, so tell the user that and stop. If `${testing.e2e.runner}` is `none`,
 > there are no runnable e2e features to mirror into — also a no-op. If `.claude/stack.md` is missing, run the
-> **`onboarding`** skill and stop. Concrete tools below (Zephyr Scale / SmartBear, TestRail, Playwright,
+> **`onboard`** skill and stop. Concrete tools below (Zephyr Scale / SmartBear, TestRail, Playwright,
 > playwright-bdd) are **examples** — match the configured tools.
 
 ## When to use

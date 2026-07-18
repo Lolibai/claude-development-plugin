@@ -16,7 +16,7 @@ Work is orchestrated by a four-role subagent team so design output lands on exis
 > `${frontend.apps}`, `${memory.store}`, `${commands.*}`, and `${testing.e2e.*}`. If `${design.figma}` is
 > **`none`**, this skill is a **no-op** — there is no configured design tool to import from, so ask the user to
 > paste a screenshot/spec or run `frontend-component-conventions` directly, and stop. If a needed capability is
-> otherwise `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the **`onboarding`** skill and
+> otherwise `none`/empty, skip those steps. If `.claude/stack.md` is missing, run the **`onboard`** skill and
 > stop. Concrete tools named below (Figma + its MCP, MUI, Tailwind, Playwright) are **examples** — match the
 > configured stack.
 

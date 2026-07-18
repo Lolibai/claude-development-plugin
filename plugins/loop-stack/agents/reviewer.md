@@ -15,7 +15,7 @@ Quality gatekeeper. Reviews the diff through Clean Code + data-protection/compli
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** Architecture layers,
 > the compliance regime (`${compliance}`), data platform (`${backend.platform}`), commands (`${commands.*}`),
 > and frontend conventions (`${frontend.*}`) come from config. If a needed capability is `none`, skip those
-> checks. If the config is missing, run the `onboarding` skill and stop.
+> checks. If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

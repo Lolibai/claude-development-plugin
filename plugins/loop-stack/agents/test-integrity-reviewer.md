@@ -16,7 +16,7 @@ This seat is the TDD guardian: the fix is only real if a test failed first and w
 
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed
 > capability is `none`, skip those steps (e.g. if `${testing.testManagement}` is `none`, skip the
-> test-management coverage check). If the config is missing, run the `onboarding` skill and stop.
+> test-management coverage check). If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent — Team Briefing)
 

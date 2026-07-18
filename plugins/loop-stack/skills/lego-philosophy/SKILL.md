@@ -13,7 +13,7 @@ not from anonymous div trees.
 > system (the class examples below assume utility CSS such as Tailwind — adapt to whatever the
 > project uses) and `${frontend.apps}` for the app/package names. The *principle* is
 > framework-agnostic and applies even with no config. If `.claude/stack.md` is missing and you need
-> app/inventory locations, run **`onboarding`** or infer from the repo layout.
+> app/inventory locations, run **`onboard`** or infer from the repo layout.
 
 ## The one rule
 

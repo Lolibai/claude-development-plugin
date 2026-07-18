@@ -7,7 +7,7 @@ description: Tear down the autonomous "my work in the active iteration" loop sta
 
 > **Config-driven — read `.claude/stack.md` first; use its values; never assume a specific tool.** This
 > skill only deletes session crons, so it works even when most capabilities are `none` — but if
-> `.claude/stack.md` is missing, run the **`onboarding`** skill and stop. If a needed capability is
+> `.claude/stack.md` is missing, run the **`onboard`** skill and stop. If a needed capability is
 > `none`, the matching loop simply was never launched, so there is nothing to delete for it.
 
 ## Purpose

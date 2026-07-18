@@ -11,7 +11,7 @@ description: Use when the user asks to check open pull requests for CI failures,
 > come from config. The flow below uses GitHub's `gh` CLI as the example VCS host — if `${vcs.host}` is a
 > different host, use its equivalent PR/check/log commands. If a needed capability (e.g. a CI host or a test
 > runner) is `none`, skip the steps that depend on it. If `.claude/stack.md` is missing, run the
-> **`onboarding`** skill and stop.
+> **`onboard`** skill and stop.
 
 End-to-end flow: enumerate open PRs → fetch CI status per PR → for each red PR, drill into the failing job logs → classify (flake vs real) → fix on the PR branch and push, or report.
 

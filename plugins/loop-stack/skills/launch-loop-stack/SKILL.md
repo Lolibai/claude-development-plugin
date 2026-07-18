@@ -11,7 +11,7 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 
 > **Config-driven — read `.claude/stack.md` first.** Every loop reads its project specifics (issue
 > tracker + `${issueTracker.myWorkQuery}`/states/transitions, `${vcs.*}` branch model, `${commands.*}`,
-> `${testing.*}`, `${ci.*}`) from that file. If it's missing, run the **`onboarding`** skill first and stop.
+> `${testing.*}`, `${ci.*}`) from that file. If it's missing, run the **`onboard`** skill first and stop.
 > Only register loops the config supports: skip DEPLOY-FIX when `${ci.deployWorkflows}` is empty; skip
 > the e2e gate when `${testing.e2e.runner}` is `none`; skip PR-REVIEW only when the VCS host has no review-request concept (reviewer identity is `@me`, not a committed handle);
 > skip PR-SHEPHERD when the VCS host has no authenticated-user concept (identity is `@me` — the authenticated `gh` user, never a committed username, so shared config works for every team member);
@@ -43,7 +43,7 @@ is scoped to the authenticated user (`@me`); DEPLOY-FIX by repo/branch.
 
 ## How to launch (do this when invoked)
 
-1. **Load config.** Read `.claude/stack.md`. Missing → run `onboarding`, stop. Substitute its values into the prompts below (everything in `${...}`).
+1. **Load config.** Read `.claude/stack.md`. Missing → run `onboard`, stop. Substitute its values into the prompts below (everything in `${...}`).
 2. **Prepare the state dir.** All loop park/dedupe files live in the project's **`.claude/loops/state/`** — per-project by construction, survives reboots, never global `/tmp` (shared across projects: issue keys, PR numbers, and deploy run IDs from different repos would collide there). `mkdir -p .claude/loops/state` and ensure `.claude/loops/state/` is in `.gitignore` (append if missing). Legacy `/tmp/*.txt` state from older stack versions is **not** migrated automatically (it may mix projects) — migrate lines by hand if needed.
 3. **Materialize the loop specs.** The cron prompts reference `.claude/loops/<spec>.md` in the project. For any loop being launched whose spec is missing there, copy it from the stack source — plugin install: `${CLAUDE_PLUGIN_ROOT}/loops/`; repo/manual copy: the `loops/` dir that ships next to this skill's `skills/` parent. Never overwrite an existing project spec (the project may have customized it — "you own this file").
 4. **Check for duplicates.** `CronList`; if an equivalent prompt already exists for a loop, report its job ID instead of creating a second. Only create missing loops.
@@ -190,5 +190,5 @@ Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/
 ## Related
 
 - `.claude/loops/*.md` — full per-loop specs (recovery, deploy-gate detail, story e2e-gate).
-- `onboarding` — writes `.claude/stack.md` (run once per project before launching).
+- `onboard` — writes `.claude/stack.md` (run once per project before launching).
 - `devfix` — the skill each FIX tick runs. `github-pr-review` — the skill each PR-REVIEW tick runs.

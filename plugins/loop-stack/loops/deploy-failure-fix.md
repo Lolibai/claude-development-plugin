@@ -7,7 +7,7 @@ Pure-infra failures are reported, never "fixed". You own this file — edit it, 
 > **Config-driven.** Read `.claude/stack.md` first. Watched workflows, env→branch mapping, fix base
 > branches, package manager, and human-gated envs all come from there (`${...}`). If `${ci.host}` is
 > `none` or `${ci.deployWorkflows}` is empty, this loop has nothing to watch — don't register it.
-> If `.claude/stack.md` is missing, run `onboarding` and stop.
+> If `.claude/stack.md` is missing, run `onboard` and stop.
 
 ## Environment → base branch → PR target
 

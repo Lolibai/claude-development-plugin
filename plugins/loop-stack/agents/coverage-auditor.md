@@ -13,7 +13,7 @@ Read-only gap detector. Takes AC from the issue harvester and touched surface fr
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** Test roots come from
 > `${testing.e2e.dir}` and the API/unit test locations in config; the Definition of Done path is the
 > project's own. If a needed capability is `none` (e.g. `${testing.e2e.runner}` is `none`), skip those
-> coverage checks. If the config is missing, run the `onboarding` skill and stop.
+> coverage checks. If the config is missing, run the `onboard` skill and stop.
 
 ## Input (from parent)
 

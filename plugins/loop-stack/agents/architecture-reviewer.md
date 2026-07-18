@@ -15,7 +15,7 @@ One seat on the concurrent review panel. Reviews the diff through the **architec
 > **Read `.claude/stack.md` first; use its values; never assume a specific tool.** Architecture layers,
 > the backend/data platform (`${backend.platform}`), and any compliance regime (`${compliance}`) come
 > from config. If a needed capability is `none`, skip those sub-checks (e.g. no compliance regime → skip
-> the data-protection sub-lens). If the config is missing, run the `onboarding` skill and stop.
+> the data-protection sub-lens). If the config is missing, run the `onboard` skill and stop.
 
 When the parent flags the diff `compliance:high` or `clean_arch:high`, it also loads the `principal-architect` **skill** into your prompt — apply its deeper rubric and raise your findings to `blocking`.
 

@@ -15,7 +15,7 @@ Read-only impact analyst. Translates AC + touched-surface data into a Coder brie
 > (`${compliance}`), data platform (`${backend.platform}`), and design tool (`${design.figma}`) come from
 > config. If a needed capability is `none`, skip the corresponding risk/step (e.g. no compliance regime →
 > drop the data-protection risk; no design tool → skip component identification). If the config is missing,
-> run the `onboarding` skill and stop.
+> run the `onboard` skill and stop.
 
 ## Input (from parent)
 

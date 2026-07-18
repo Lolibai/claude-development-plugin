@@ -1,6 +1,6 @@
 # Create PR with Issue-Key prefix
 
-Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboarding` skill and stop.
+Read `.claude/stack.md` first; use its values; never assume a specific tool; if a needed capability is `none`, skip those steps; if the config is missing, run the `onboard` skill and stop.
 
 Create or update a pull request on the configured VCS host (`${project.vcsHost}` — e.g. GitHub via its MCP, or `gh`), and enforce the title/body rules below. **Do not** enable auto-merge on the PR (no `--auto`, no toggling auto-merge in the host UI).
 

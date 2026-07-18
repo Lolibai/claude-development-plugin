@@ -20,7 +20,7 @@ Read-only context fetcher. Owns all issue-tracker + linked-docs + design-tool MC
 > entries above are wired to whichever tracker MCP the project configured — use the equivalents for the
 > configured tools (e.g. a GitHub-issues read for a GitHub project). If a needed capability is `none`,
 > skip those steps (no linked-docs platform → no docs fetch; no design tool → no design-link scan). If
-> the config is missing, run the `onboarding` skill and stop.
+> the config is missing, run the `onboard` skill and stop.
 >
 > *(This agent is intentionally tracker-agnostic; the filename `jira-harvester.md` is retained for now but
 > the role is a generic issue/ticket harvester — it could later be renamed `issue-harvester`.)*

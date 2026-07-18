@@ -9,7 +9,7 @@ description: Gets E2E tests green quickly by running one feature at a time, lowe
 
 Get the project's E2E suite passing with minimal services and clear failure scope. Run **one feature at a time**; add services only when moving to the next tier.
 
-> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboarding` skill and stop.
+> **Read `.claude/stack.md` first; use its values; never assume a specific tool.** If a needed capability is `none`, skip those steps. If the config is missing, run the `onboard` skill and stop.
 
 Use the configured E2E runner `${testing.e2e.runner}` (e.g. Playwright, Cypress), its directory `${testing.e2e.dir}`, its BDD/generation step `${testing.e2e.bddStep}` (e.g. `npx bddgen`, for playwright-bdd Gherkin `.feature` files), and the package manager / scripts in `${commands.*}`. If `${testing.e2e.runner}` is `none`, this skill is a no-op — report that and stop.
 
