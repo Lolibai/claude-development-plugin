@@ -135,9 +135,46 @@ function observeGit(o) {
   }
 }
 
+function observeGh(o, repo) {
+  if (!repo || !tryExec("gh auth status 2>&1 && echo ok")) return;
+  let prs = []; try { prs = JSON.parse(tryExec("gh pr list --state merged --limit 30 --json baseRefName,headRefName,reviews")); } catch {}
+  if (prs.length) {
+    const bases = {};
+    for (const p of prs) bases[p.baseRefName] = (bases[p.baseRefName] || 0) + 1;
+    setObs(o, "integrationBranch", Object.entries(bases).sort((a, b) => b[1] - a[1])[0][0], "gh");
+    const rev = {};
+    for (const p of prs) for (const r of p.reviews || []) if (r.author && r.author.login) rev[r.author.login] = (rev[r.author.login] || 0) + 1;
+    setObs(o, "reviewers", Object.entries(rev).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([l]) => l), "gh");
+  }
+  try {
+    const s = JSON.parse(tryExec("gh api repos/" + repo + " --jq '{squash:.allow_squash_merge,merge:.allow_merge_commit,rebase:.allow_rebase_merge}'"));
+    const methods = Object.entries(s).filter(([, v]) => v).map(([k]) => k);
+    setObs(o, "mergeMethods", methods, "gh");
+    if (methods.length === 1) setObs(o, "mergeStyle", methods[0], "gh");
+  } catch {}
+  const ib = o.integrationBranch && o.integrationBranch.value;
+  if (ib) {
+    const prot = tryExec("gh api repos/" + repo + "/branches/" + ib + " --jq .protected");
+    if (prot === "true" || prot === "false") setObs(o, "branchProtected", prot === "true", "gh");
+  }
+  try {
+    const envs = JSON.parse(tryExec("gh api repos/" + repo + "/environments --jq '[.environments[].name]'"));
+    setObs(o, "environments", envs, "gh");
+  } catch {}
+  try {
+    const gated = JSON.parse(tryExec("gh api repos/" + repo + "/environments --jq '[.environments[] | select((.protection_rules | length) > 0) | .name]'"));
+    setObs(o, "humanGatedEnvs", gated, "gh");
+  } catch {}
+  try {
+    const runs = JSON.parse(tryExec("gh run list --limit 50 --json workflowName"));
+    setObs(o, "recentWorkflows", [...new Set(runs.map((r) => r.workflowName).filter(Boolean))], "gh");
+  } catch {}
+}
+
 function observe(d) {
   const o = {};
   observeGit(o);
+  if (d.vcs.host === "github") observeGh(o, d.vcs.repo);
   return o;
 }
 
