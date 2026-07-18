@@ -112,11 +112,12 @@ const setObs = (o, key, value, source) => {
   if (o[key] && RANK[o[key].source] > RANK[source]) return;
   o[key] = { value, source };
 };
+const safeRef = (s) => (/^[\w./-]+$/.test(s) ? s : "");
 
 function observeGit(o) {
-  const head = (tryExec("git remote show origin").match(/HEAD branch:\s*(\S+)/) || [])[1];
-  if (head && head !== "(unknown)") setObs(o, "integrationBranch", head, "git");
-  const ref = head ? "origin/" + head : (tryExec("git symbolic-ref --short HEAD") || "HEAD");
+  const head = safeRef((tryExec("git remote show origin").match(/HEAD branch:\s*(\S+)/) || [])[1] || "");
+  if (head) setObs(o, "integrationBranch", head, "git");
+  const ref = head ? "origin/" + head : (safeRef(tryExec("git symbolic-ref --short HEAD")) || "HEAD");
   const total = Number(tryExec("git rev-list --count --first-parent --max-count=200 " + ref)) || 0;
   const merges = Number(tryExec("git rev-list --count --merges --first-parent --max-count=200 " + ref)) || 0;
   if (total >= 10) setObs(o, "mergeStyle", merges / total > 0.3 ? "merge" : "squash", "git");
@@ -136,7 +137,7 @@ function observeGit(o) {
 }
 
 function observeGh(o, repo) {
-  if (!repo || !tryExec("gh auth status 2>&1 && echo ok")) return;
+  if (!repo || !/^[\w.-]+\/[\w.-]+$/.test(repo) || !tryExec("gh auth status 2>&1 && echo ok")) return;
   let prs = []; try { prs = JSON.parse(tryExec("gh pr list --state merged --limit 30 --json baseRefName,headRefName,reviews")); } catch {}
   if (prs.length) {
     const bases = {};
@@ -153,7 +154,7 @@ function observeGh(o, repo) {
     if (methods.length === 1) setObs(o, "mergeStyle", methods[0], "gh");
   } catch {}
   const ib = o.integrationBranch && o.integrationBranch.value;
-  if (ib) {
+  if (safeRef(ib)) {
     const prot = tryExec("gh api repos/" + repo + "/branches/" + ib + " --jq .protected");
     if (prot === "true" || prot === "false") setObs(o, "branchProtected", prot === "true", "gh");
   }
@@ -263,7 +264,7 @@ const OBS_MAP = [
   ["localRestart", ["edge", "localRestart"]],
 ];
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const cfgEmpty = (v) => obsEmpty(v) || v === "none";
+const cfgEmpty = (v) => obsEmpty(v) || v === "none" || (typeof v === "object" && v !== null && !Array.isArray(v) && Object.values(v).every(obsEmpty));
 
 function mergeObserved(cfg, obs, prev) {
   const filled = [], conflicts = [];
