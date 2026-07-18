@@ -54,6 +54,7 @@
 ## CI / deploy
 - CI host: **github-actions**
 - Deploy workflows: {"dev":["deploy-backend-dev.yml","deploy-frontend-<app>-dev.yml"],"stage":["deploy-backend-stage.yml","deploy-frontend-<app>-stage.yml"]}
+- Deploy platforms: docker, supabase
 - Deploy gate before verify: yes · human-gated envs: prod
 
 ## Design

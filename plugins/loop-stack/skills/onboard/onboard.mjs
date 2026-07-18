@@ -171,10 +171,34 @@ function observeGh(o, repo) {
   } catch {}
 }
 
+function observeFiles(o) {
+  let wfs = []; try { wfs = fs.readdirSync(path.resolve(ROOT, ".github/workflows")).filter((f) => /\.ya?ml$/.test(f)); } catch {}
+  const envOf = (s) => (/prod/i.test(s) ? "prod" : /stag/i.test(s) ? "stage" : /dev/i.test(s) ? "dev" : "");
+  const BR_ENV = { develop: "dev", dev: "dev", staging: "stage", stage: "stage", production: "prod", prod: "prod" };
+  const wfByEnv = {}, envB = {};
+  for (const f of wfs) {
+    if (!/deploy|release|publish/i.test(f)) continue;
+    let txt = ""; try { txt = fs.readFileSync(path.resolve(ROOT, ".github/workflows", f), "utf8"); } catch {}
+    const bm = txt.match(/branches:\s*(?:\[([^\]]*)\]|((?:\n\s*-\s*.+)+))/);
+    const branches = bm ? (bm[1] !== undefined ? bm[1].split(",") : bm[2].split("\n").map((l) => l.replace(/\s*-\s*/, ""))).map((s) => s.trim().replace(/['"]/g, "")).filter(Boolean) : [];
+    const env = envOf(f) || (branches[0] ? BR_ENV[branches[0]] || "" : "");
+    (wfByEnv[env || "default"] = wfByEnv[env || "default"] || []).push(f);
+    if (env && branches[0]) envB[env] = branches[0];
+  }
+  setObs(o, "deployWorkflows", wfByEnv, "files");
+  setObs(o, "envBranches", envB, "files");
+  if (wfs.length) setObs(o, "ciHost", "github-actions", "files");
+  else if (exists(".gitlab-ci.yml")) setObs(o, "ciHost", "gitlab-ci", "files");
+  else if (exists("bitbucket-pipelines.yml")) setObs(o, "ciHost", "bitbucket-pipelines", "files");
+  const PLATFORMS = [["vercel", "vercel.json"], ["netlify", "netlify.toml"], ["fly", "fly.toml"], ["render", "render.yaml"], ["heroku", "Procfile"], ["docker", "Dockerfile"], ["docker", "compose.yaml"], ["docker", "docker-compose.yml"], ["serverless", "serverless.yml"], ["supabase", "supabase/config.toml"], ["supabase", "backend/supabase/config.toml"], ["gae", "app.yaml"], ["cloudflare", "wrangler.toml"]];
+  setObs(o, "deployPlatforms", [...new Set(PLATFORMS.filter(([, p]) => exists(p)).map(([n]) => n))], "files");
+}
+
 function observe(d) {
   const o = {};
   observeGit(o);
   if (d.vcs.host === "github") observeGh(o, d.vcs.repo);
+  observeFiles(o);
   return o;
 }
 
@@ -243,7 +267,7 @@ function defaultsFrom(d, prev) {
       testManagement: (p.testing && p.testing.testManagement) || "none",
     },
     memory: (p.memory) || { store: "none", collectionNaming: "", note: "" },
-    ci: { host: d.ci.host, deployWorkflows: (p.ci && p.ci.deployWorkflows) || { default: d.ci.deployWorkflows }, deployGate: (p.ci && typeof p.ci.deployGate === "boolean") ? p.ci.deployGate : false, humanGatedEnvs: (p.ci && p.ci.humanGatedEnvs) || ["prod"] },
+    ci: { host: d.ci.host, deployWorkflows: (p.ci && p.ci.deployWorkflows) || { default: d.ci.deployWorkflows }, deployPlatforms: (p.ci && p.ci.deployPlatforms) || [], deployGate: (p.ci && typeof p.ci.deployGate === "boolean") ? p.ci.deployGate : false, humanGatedEnvs: (p.ci && p.ci.humanGatedEnvs) || ["prod"] },
     design: (p.design) || { figma: false, note: "" },
     reporting: (p.reporting) || { daily: true, destination: "none" },
     compliance: (p.compliance) || "none",
@@ -355,6 +379,7 @@ function renderMd(c) {
   L.push("## CI / deploy");
   L.push("- CI host: **" + v(c.ci.host) + "**");
   L.push("- Deploy workflows: " + JSON.stringify(c.ci.deployWorkflows));
+  L.push("- Deploy platforms: " + list(c.ci.deployPlatforms));
   L.push("- Deploy gate before verify: " + yn(c.ci.deployGate) + " | human-gated envs: " + list(c.ci.humanGatedEnvs));
   L.push("");
   L.push("## Design");
