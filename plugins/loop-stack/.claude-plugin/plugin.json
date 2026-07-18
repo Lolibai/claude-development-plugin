@@ -1,6 +1,6 @@
 {
   "name": "loop-stack",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Universal, config-driven autonomous dev loop stack: session crons that fix assigned bugs, verify against AC + deploys, review requested PRs, shepherd your own PRs to merge (review-respond / CI-fix / conflict-resolve), repair failed deployments, keep fix-base branches synced, and post a daily standup report with parked-item escalation. Project specifics live in .claude/stack.md, written once by the onboarding skill.",
   "author": {
     "name": "Mykhailo"
