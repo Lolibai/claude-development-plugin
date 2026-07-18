@@ -196,11 +196,47 @@ function observeFiles(o) {
   setObs(o, "deployPlatforms", [...new Set(PLATFORMS.filter(([, p]) => exists(p)).map(([n]) => n))], "files");
 }
 
+function observeSessions(o) {
+  const dir = path.join(process.env.HOME || "", ".claude", "projects", ROOT.replace(/[/.]/g, "-"));
+  let files = [];
+  try {
+    files = fs.readdirSync(dir).filter((f) => f.endsWith(".jsonl"))
+      .map((f) => { const p = path.join(dir, f); const st = fs.statSync(p); return { p, m: st.mtimeMs, size: st.size }; })
+      .filter((f) => f.size < 25 * 1024 * 1024).sort((a, b) => b.m - a.m).slice(0, 20);
+  } catch { return; }
+  const freq = {};
+  for (const { p } of files) {
+    let txt = ""; try { txt = fs.readFileSync(p, "utf8"); } catch { continue; }
+    for (const line of txt.split("\n")) {
+      if (!line.includes('"Bash"')) continue;
+      try {
+        for (const c of ((JSON.parse(line).message || {}).content || [])) {
+          if (c && c.type === "tool_use" && c.name === "Bash" && typeof (c.input || {}).command === "string" && c.input.command.length < 500) {
+            const cmd = c.input.command.trim();
+            freq[cmd] = (freq[cmd] || 0) + 1;
+          }
+        }
+      } catch {}
+    }
+  }
+  const ranked = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+  const pick = (re) => ranked.find((c) => re.test(c) && !c.includes("&&") && !c.includes("|")) || "";
+  setObs(o, "cmdTest", pick(/^(pnpm|yarn|bun run|npm run|npx)\s+(run\s+)?(test|vitest|jest)\b/), "sessions");
+  setObs(o, "cmdBuild", pick(/^(pnpm|yarn|bun run|npm run)\s+(run\s+)?build\b/), "sessions");
+  setObs(o, "cmdLint", pick(/^(pnpm|yarn|bun run|npm run|npx)\s+(run\s+)?(lint|eslint)\b/), "sessions");
+  setObs(o, "cmdTypecheck", pick(/^(pnpm|yarn|bun run|npm run|npx)\s+(run\s+)?(typecheck|tsc)\b/), "sessions");
+  setObs(o, "migrateCmd", pick(/^(supabase db push|npx prisma migrate|pnpm .*migrate|npm run .*migrate)/), "sessions");
+  setObs(o, "localRestart", pick(/^(supabase stop|docker compose (up|down|restart))/), "sessions");
+  const merge = ranked.find((c) => /^gh pr merge\b/.test(c));
+  if (merge) { const m = merge.match(/--(squash|merge|rebase)\b/); if (m) setObs(o, "mergeStyle", m[1], "sessions"); }
+}
+
 function observe(d) {
   const o = {};
   observeGit(o);
   if (d.vcs.host === "github") observeGh(o, d.vcs.repo);
   observeFiles(o);
+  observeSessions(o);
   return o;
 }
 
