@@ -103,6 +103,50 @@ function detectCi() {
   return { host: wf.length ? "github-actions" : "none", deployWorkflows: deploy };
 }
 
+// ---------- observation ----------
+const RANK = { gh: 3, glab: 3, git: 2, files: 2, sessions: 1 };
+const OBS_FIELDS = ["integrationBranch", "mergeStyle", "branchNaming", "envBranches", "reviewers", "mergeMethods", "branchProtected", "environments", "humanGatedEnvs", "ciHost", "deployWorkflows", "deployPlatforms", "recentWorkflows", "cmdTest", "cmdBuild", "cmdLint", "cmdTypecheck", "migrateCmd", "localRestart"];
+const obsEmpty = (v) => v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length) || (typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length);
+const setObs = (o, key, value, source) => {
+  if (obsEmpty(value)) return;
+  if (o[key] && RANK[o[key].source] > RANK[source]) return;
+  o[key] = { value, source };
+};
+
+function observeGit(o) {
+  const head = (tryExec("git remote show origin").match(/HEAD branch:\s*(\S+)/) || [])[1];
+  if (head && head !== "(unknown)") setObs(o, "integrationBranch", head, "git");
+  const ref = head ? "origin/" + head : (tryExec("git symbolic-ref --short HEAD") || "HEAD");
+  const total = Number(tryExec("git rev-list --count --first-parent --max-count=200 " + ref)) || 0;
+  const merges = Number(tryExec("git rev-list --count --merges --first-parent --max-count=200 " + ref)) || 0;
+  if (total >= 10) setObs(o, "mergeStyle", merges / total > 0.3 ? "merge" : "squash", "git");
+  const remote = tryExec('git branch -r --format="%(refname:short)"').split("\n").map((b) => b.replace(/^origin\//, "").trim()).filter((b) => b && !b.includes("HEAD"));
+  const ENV = { develop: "dev", dev: "dev", staging: "stage", stage: "stage", production: "prod", prod: "prod" };
+  const envB = {};
+  for (const b of remote) if (ENV[b] && b !== head) envB[ENV[b]] = b;
+  setObs(o, "envBranches", envB, "git");
+  const prefixes = {};
+  for (const b of remote) { const p = b.match(/^([a-z]+)\//); if (p) prefixes[p[1]] = (prefixes[p[1]] || 0) + 1; }
+  const top = Object.entries(prefixes).sort((a, b) => b[1] - a[1])[0];
+  if (top && top[1] >= 3) {
+    const sample = remote.filter((b) => b.startsWith(top[0] + "/"));
+    const keyLike = sample.filter((b) => /\/[A-Z]+-\d+/.test(b)).length > sample.length / 2;
+    setObs(o, "branchNaming", keyLike ? "<type>/<KEY>" : "<type>/<slug>", "git");
+  }
+}
+
+function observe(d) {
+  const o = {};
+  observeGit(o);
+  return o;
+}
+
+function renderObservedReport(o) {
+  const L = ["Observed (value [source]):"];
+  for (const k of OBS_FIELDS) L.push("  " + k + " = " + (o[k] ? JSON.stringify(o[k].value) + "  [" + o[k].source + "]" : "[unobserved]"));
+  return L.join("\n");
+}
+
 function detect() {
   const vcs = detectVcs();
   return {
@@ -293,9 +337,11 @@ function renderMd(c) {
 
 // ---------- main ----------
 const detected = detect();
+const observed = observe(detected);
 
 if (DETECT_ONLY) {
   console.log(JSON.stringify(detected, null, 2));
+  console.log("\n" + renderObservedReport(observed));
   process.exit(0);
 }
 
