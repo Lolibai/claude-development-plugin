@@ -246,6 +246,43 @@ function renderObservedReport(o) {
   return L.join("\n");
 }
 
+const OBS_MAP = [
+  ["integrationBranch", ["vcs", "integrationBranch"]],
+  ["mergeStyle", ["vcs", "autoMerge"]],
+  ["branchNaming", ["vcs", "branchNaming"]],
+  ["envBranches", ["vcs", "envBranches"]],
+  ["ciHost", ["ci", "host"]],
+  ["deployWorkflows", ["ci", "deployWorkflows"]],
+  ["humanGatedEnvs", ["ci", "humanGatedEnvs"]],
+  ["deployPlatforms", ["ci", "deployPlatforms"]],
+  ["cmdTest", ["commands", "test"]],
+  ["cmdBuild", ["commands", "build"]],
+  ["cmdLint", ["commands", "lint"]],
+  ["cmdTypecheck", ["commands", "typecheck"]],
+  ["migrateCmd", ["backend", "migrateCmd"]],
+  ["localRestart", ["edge", "localRestart"]],
+];
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const cfgEmpty = (v) => obsEmpty(v) || v === "none";
+
+function mergeObserved(cfg, obs, prev) {
+  const filled = [], conflicts = [];
+  for (const [key, pathArr] of OBS_MAP) {
+    const ob = obs[key];
+    if (!ob) continue;
+    const parent = pathArr.slice(0, -1).reduce((n, k) => n[k], cfg);
+    const leaf = pathArr[pathArr.length - 1];
+    const prevVal = prev ? pathArr.reduce((n, k) => (n ? n[k] : undefined), prev) : undefined;
+    if (cfgEmpty(prevVal)) {
+      if (!same(parent[leaf], ob.value)) { parent[leaf] = ob.value; filled.push({ path: pathArr.join("."), value: ob.value, source: ob.source }); }
+    } else if (!same(prevVal, ob.value)) {
+      if (ob.source === "sessions") continue;
+      conflicts.push({ pathArr, path: pathArr.join("."), current: prevVal, observed: ob.value, source: ob.source });
+    }
+  }
+  return { filled, conflicts };
+}
+
 function detect() {
   const vcs = detectVcs();
   return {
@@ -314,10 +351,14 @@ function defaultsFrom(d, prev) {
 }
 
 // ---------- prompting ----------
-async function prompt(cfg) {
+async function prompt(cfg, conflicts) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const ask = (q, d) => new Promise((res) => rl.question(`${q}${d ? ` [${d}]` : ""}: `, (a) => res((a || "").trim() || d || "")));
   console.log("\n- Project stack onboarding - press Enter to accept the detected default -\n");
+  for (const c of conflicts) {
+    const a = await ask("Conflict " + c.path + ": observed " + JSON.stringify(c.observed) + " [" + c.source + "], config has " + JSON.stringify(c.current) + " - keep config (Enter) / take observed (o)", "");
+    if (/^o/i.test(a)) { const parent = c.pathArr.slice(0, -1).reduce((n, k) => n[k], cfg); parent[c.pathArr[c.pathArr.length - 1]] = c.observed; }
+  }
   cfg.project.name = await ask("Project name", cfg.project.name);
   cfg.project.username = await ask("Your VCS username (for 'my PRs'/'my work')", cfg.project.username);
   cfg.issueTracker.tool = await ask("Issue tracker (github/jira/linear/none)", cfg.issueTracker.tool);
@@ -447,7 +488,12 @@ if (DETECT_ONLY) {
 
 const prev = readJSON(path.resolve(OUT, "stack.json"));
 let cfg = defaultsFrom(detected, prev);
-if (!NON_INTERACTIVE) cfg = await prompt(cfg);
+const { filled, conflicts } = mergeObserved(cfg, observed, prev);
+for (const f of filled) console.log("  observed " + f.path + " = " + JSON.stringify(f.value) + " [" + f.source + "]");
+if (!NON_INTERACTIVE) cfg = await prompt(cfg, conflicts);
+else for (const c of conflicts) console.log("  ! " + c.path + ": config keeps " + JSON.stringify(c.current) + " (observed " + JSON.stringify(c.observed) + " [" + c.source + "])");
+delete cfg._observed;
+cfg._observed = { at: new Date().toISOString(), ...observed };
 
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.resolve(OUT, "stack.json"), JSON.stringify(cfg, null, 2) + "\n");
