@@ -85,7 +85,7 @@ Autonomous "my bugs" — VERIFY TICK (any time, session active). First read .cla
    - if ${testing.e2e.runner} ≠ none: in ${testing.e2e.dir}, run ${testing.e2e.bddStep} then the e2e command filtered to the issue's ${testing.e2e.tagConvention} tag. No matching scenario → e2e N/A.
    COVERAGE RULE: at least ONE test must exercise THIS bug's AC. If NONE → PARK: append "<KEY> # no AC coverage" to .claude/loops/state/my-bugs-verify-parked.txt and STOP — do NOT transition.
 6. Deploy gate — ONLY if ${ci.deployGate} is true: fix commit in origin/${vcs.integrationBranch} AND a SUCCESSFUL run of a relevant workflow from ${ci.deployWorkflows} includes it (fix SHA ancestor of run head SHA), via gh. If ${ci.deployGate} is false, skip this gate.
-7. ONLY IF all AC-covering tests GREEN AND (deploy gate passes or is off): transition issue→${states.verified} (by state name / id from ${issueTracker.transitionIds}) + set assignee per ${issueTracker.handoffAssignee} (e.g. reporter; leave as-is if none) + add a comment (tests [+ deploy run]).
+7. ONLY IF all AC-covering tests GREEN AND (deploy gate passes or is off): transition issue→${states.verified} (by state name / id from ${issueTracker.transitionIds}) + set assignee per ${issueTracker.handoffAssignee} (default reporter — hand the bug back to whoever reported it; leave as-is only if none) + add a comment (tests [+ deploy run]).
 8. Gaps:
    - Genuine test FAILURE that is the bug's own code (re-run once to rule out flake) → PARK ("<KEY> # test fail: <one-line>") and STOP.
    - TRANSIENT (do NOT park; retried next tick): deploy not yet green/pending → STOP. OR an env/infra failure described in ${recoveryNotes} → follow that runbook. Never mark a bug failed for an env/infra reason.

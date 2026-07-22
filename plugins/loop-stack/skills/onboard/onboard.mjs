@@ -317,7 +317,7 @@ function defaultsFrom(d, prev) {
       issueTypes: (p.issueTracker && p.issueTracker.issueTypes) || { bug: "Bug", story: "Story" },
       states: (p.issueTracker && p.issueTracker.states) || { todo: "To Do", inProgress: "In Progress", inReview: "In Review", verify: "", verified: "", done: "Done" },
       transitionIds: (p.issueTracker && p.issueTracker.transitionIds) || {},
-      handoffAssignee: (p.issueTracker && p.issueTracker.handoffAssignee) || "none",
+      handoffAssignee: (p.issueTracker && p.issueTracker.handoffAssignee) || "reporter",
     },
     vcs: {
       integrationBranch: (p.vcs && p.vcs.integrationBranch) || d.vcs.currentBranch || "main",

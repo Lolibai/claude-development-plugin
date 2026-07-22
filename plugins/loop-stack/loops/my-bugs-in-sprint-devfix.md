@@ -69,7 +69,7 @@ Job IDs are assigned by `launch-loop-stack` at registration (`CronList` to see t
    - e2e (if `${testing.e2e.runner}` ≠ none): in `${testing.e2e.dir}`, run `${testing.e2e.bddStep}` then the e2e command filtered to the issue's `${testing.e2e.tagConvention}` tag. No matching scenario → e2e **N/A**.
    - **Coverage rule:** at least ONE test must exercise this bug's AC (the fix commit's test, or a tagged e2e). **None exists → PARK** (`echo "<KEY> # no AC coverage" >> .claude/loops/state/my-bugs-verify-parked.txt`) and stop — do **not** transition.
 6. **Deploy gate (only if `${ci.deployGate}` is true):** fix commit in `origin/${vcs.integrationBranch}` **and** a **successful** relevant deploy run from `${ci.deployWorkflows}` includes it (fix SHA ancestor of run head SHA), via `gh`. If `${ci.deployGate}` is false, skip this gate.
-7. **Only if all AC-covering tests green AND (deploy gate passes or is off):** transition → `${states.verified}` + set assignee per `${issueTracker.handoffAssignee}` (e.g. reporter; or leave as-is if `none`) + comment (tests [+ deploy run]).
+7. **Only if all AC-covering tests green AND (deploy gate passes or is off):** transition → `${states.verified}` + set assignee per `${issueTracker.handoffAssignee}` (default `reporter` — hand the bug back to whoever reported it; leave as-is only if `none`) + comment (tests [+ deploy run]).
 8. **Gaps:**
    - Genuine test **failure** that is the bug's own code (re-run once to rule out flake) → **PARK** (`# test fail: …`) and stop.
    - **Transient — do NOT park, retried next tick:** deploy pending/not-green → stop. OR an env/infra failure described in `${recoveryNotes}` → follow that runbook, don't park. **Never mark a bug failed for an env/infra reason.**
