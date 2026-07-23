@@ -11,6 +11,8 @@ Make the loop stack portable. Run this at setup and **re-run any time** — like
 
 Every other skill/agent/command/loop reads `.claude/stack.md` for these values. Nothing is hardcoded, so the same stack works in any repo. Anything left `none`/empty means "this project doesn't use it — skip those steps."
 
+**Tracker-adaptive.** A "team" here is a **project/repo** — one `.claude/stack.md` per repo, bound to whatever tracker that project uses. Onboard treats **Jira, GitHub Issues, and Linear as co-equal first-class paths**: it seeds tracker-appropriate idioms (key prefix, `myWorkQuery`, states, transition, `reporter` handoff) so downstream skills read the same `${issueTracker.*}` tokens no matter the tool. GitHub Issues uses `open`/`closed` + labels (no transition ids) and `reporter` = the issue author; Linear transitions by state name and `reporter` = the creator. See the tracker-adaptive table in `CONVENTIONS.md`.
+
 ## When to use
 
 - Bringing the loop stack to a new project for the first time.

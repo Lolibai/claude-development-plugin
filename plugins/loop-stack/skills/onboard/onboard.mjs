@@ -314,9 +314,37 @@ function detect() {
 }
 
 // ---------- config assembly ----------
+// Tracker-adaptive presets. Jira, GitHub Issues, and Linear are co-equal first-class paths;
+// each project picks one (one .claude/stack.md per repo). `reporter` handoff means "the issue
+// opener" for every tracker (Jira reporter / GitHub issue author / Linear creator).
+const TRACKER = {
+  jira: {
+    keyPrefix: "",
+    myWorkQuery: "assignee = currentUser() AND sprint in openSprints()",
+    states: { todo: "To Do", inProgress: "In Progress", inReview: "In Review", verify: "Dev Testing", verified: "Ready for Testing", done: "Done" },
+    handoff: "reporter",
+  },
+  github: {
+    keyPrefix: "#",
+    myWorkQuery: "is:open is:issue assignee:@me",
+    // GitHub Issues has only open/closed; interim states are labels (transition = add/remove label, done = close).
+    states: { todo: "open", inProgress: "in progress", inReview: "in review", verify: "needs testing", verified: "verified", done: "closed" },
+    handoff: "reporter",
+  },
+  linear: {
+    keyPrefix: "",
+    myWorkQuery: "assignee:me state:started",
+    states: { todo: "Todo", inProgress: "In Progress", inReview: "In Review", verify: "In Review", verified: "Done", done: "Done" },
+    handoff: "reporter",
+  },
+};
+
 function defaultsFrom(d, prev) {
   const p = prev || {};
   const pm = d.packageManager;
+  const it = p.issueTracker || {};
+  const tool = it.tool || (d.vcs.host === "github" ? "github" : "none");
+  const tp = TRACKER[tool] || {};
   return {
     version: 1,
     project: {
@@ -326,14 +354,14 @@ function defaultsFrom(d, prev) {
       username: d.vcs.username || (p.project && p.project.username) || "",
     },
     issueTracker: {
-      tool: (p.issueTracker && p.issueTracker.tool) || (d.vcs.host === "github" ? "github" : "none"),
-      connection: (p.issueTracker && p.issueTracker.connection) || "",
-      keyPrefix: (p.issueTracker && p.issueTracker.keyPrefix) || "",
-      myWorkQuery: (p.issueTracker && p.issueTracker.myWorkQuery) || (d.vcs.host === "github" ? "is:open is:issue assignee:@me" : ""),
-      issueTypes: (p.issueTracker && p.issueTracker.issueTypes) || { bug: "Bug", story: "Story" },
-      states: (p.issueTracker && p.issueTracker.states) || { todo: "To Do", inProgress: "In Progress", inReview: "In Review", verify: "", verified: "", done: "Done" },
-      transitionIds: (p.issueTracker && p.issueTracker.transitionIds) || {},
-      handoffAssignee: (p.issueTracker && p.issueTracker.handoffAssignee) || "reporter",
+      tool,
+      connection: it.connection || (tool === "github" ? d.vcs.repo : ""),
+      keyPrefix: it.keyPrefix || tp.keyPrefix || "",
+      myWorkQuery: it.myWorkQuery || tp.myWorkQuery || "",
+      issueTypes: it.issueTypes || { bug: "Bug", story: "Story" },
+      states: it.states || tp.states || { todo: "To Do", inProgress: "In Progress", inReview: "In Review", verify: "", verified: "", done: "Done" },
+      transitionIds: it.transitionIds || {},
+      handoffAssignee: it.handoffAssignee || tp.handoff || "reporter",
     },
     vcs: {
       integrationBranch: (p.vcs && p.vcs.integrationBranch) || d.vcs.currentBranch || "main",
@@ -379,13 +407,34 @@ async function prompt(cfg, conflicts) {
   }
   cfg.project.name = await ask("Project name", cfg.project.name);
   cfg.project.username = await ask("Your VCS username (for 'my PRs'/'my work')", cfg.project.username);
-  cfg.issueTracker.tool = await ask("Issue tracker (github/jira/linear/none)", cfg.issueTracker.tool);
-  if (cfg.issueTracker.tool === "jira") {
+  const prevTool = cfg.issueTracker.tool;
+  cfg.issueTracker.tool = await ask("Issue tracker (github/jira/linear/none)", prevTool);
+  const tool = cfg.issueTracker.tool;
+  const tp = TRACKER[tool];
+  // When the tracker changed (or a field is still empty), seed it with that tracker's idioms.
+  if (tp) {
+    const seed = (k, v) => { if (tool !== prevTool || !cfg.issueTracker[k] || (typeof cfg.issueTracker[k] === "object" && !Object.keys(cfg.issueTracker[k]).length)) cfg.issueTracker[k] = v; };
+    seed("keyPrefix", tp.keyPrefix);
+    seed("myWorkQuery", tp.myWorkQuery);
+    seed("states", { ...tp.states });
+    seed("handoffAssignee", tp.handoff);
+    if (tool !== prevTool && tool === "github") cfg.issueTracker.transitionIds = {};
+  }
+  if (tool === "jira") {
     cfg.issueTracker.connection = await ask("  Jira cloud (e.g. yourco.atlassian.net)", cfg.issueTracker.connection);
     cfg.issueTracker.keyPrefix = await ask("  Ticket key prefix (e.g. PROJ)", cfg.issueTracker.keyPrefix);
-    cfg.issueTracker.myWorkQuery = await ask("  'My active work' JQL", cfg.issueTracker.myWorkQuery || "assignee = currentUser() AND sprint in openSprints()");
+    cfg.issueTracker.myWorkQuery = await ask("  'My active work' JQL", cfg.issueTracker.myWorkQuery);
     cfg.issueTracker.handoffAssignee = await ask("  On verify, reassign to (reporter/none)", cfg.issueTracker.handoffAssignee);
-  } else if (cfg.issueTracker.tool !== "none") {
+  } else if (tool === "github") {
+    cfg.issueTracker.connection = await ask("  GitHub repo that holds the issues (owner/name)", cfg.issueTracker.connection || cfg.project.repo);
+    cfg.issueTracker.myWorkQuery = await ask("  'My active work' issue search", cfg.issueTracker.myWorkQuery);
+    cfg.issueTracker.handoffAssignee = await ask("  On verify, reassign to (reporter=issue author / none)", cfg.issueTracker.handoffAssignee);
+    console.log("    GitHub Issues: interim states are labels (todo=open, done=closed) — transition = add/remove label + close; no transition ids.");
+  } else if (tool === "linear") {
+    cfg.issueTracker.connection = await ask("  Linear team key (e.g. ENG)", cfg.issueTracker.connection);
+    cfg.issueTracker.myWorkQuery = await ask("  'My active work' filter", cfg.issueTracker.myWorkQuery);
+    cfg.issueTracker.handoffAssignee = await ask("  On verify, reassign to (reporter=creator / none)", cfg.issueTracker.handoffAssignee);
+  } else if (tool !== "none") {
     cfg.issueTracker.myWorkQuery = await ask("  'My active work' query", cfg.issueTracker.myWorkQuery);
   }
   cfg.vcs.integrationBranch = await ask("Integration branch", cfg.vcs.integrationBranch);
@@ -438,7 +487,9 @@ function renderMd(c) {
   L.push("- Issue types: bug=" + code(c.issueTracker.issueTypes.bug) + ", story=" + code(c.issueTracker.issueTypes.story));
   L.push("- States: " + states);
   L.push("- Transition ids (if tracker needs them): " + transitions);
-  L.push("- On verify, reassign to: " + v(c.issueTracker.handoffAssignee));
+  L.push("- On verify, reassign to: " + v(c.issueTracker.handoffAssignee) + " (reporter = the issue opener, whatever the tracker calls it)");
+  if (c.issueTracker.tool === "github") L.push("- GitHub Issues: interim states are labels (todo=open, done=closed); transition = add/remove the state label (+ close for done); no transition ids; reporter handoff = issue author.");
+  else if (c.issueTracker.tool === "linear") L.push("- Linear: transition by workflow state name; reporter handoff = issue creator.");
   L.push("");
   L.push("## Branching / PR model");
   L.push("- Integration branch: **" + v(c.vcs.integrationBranch) + "**");

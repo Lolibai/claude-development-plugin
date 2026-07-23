@@ -57,6 +57,25 @@ Rename and rewrite so they adapt to the configured tool (or no-op when it's `non
 > Renaming = add the new file (we can't delete here). When sweeping, create the generic file and
 > leave a one-line pointer in the old one, or have the user delete the old name after.
 
+## Tracker-adaptive config — Jira, GitHub Issues, Linear are co-equal
+
+A "team" in this stack is a **project/repo**: one `.claude/stack.md` per repo, each bound to whatever
+tracker that project uses. `onboard` treats Jira, GitHub Issues, and Linear as **first-class, equal
+paths** — it seeds tracker-appropriate idioms (never Jira-only assumptions) so every skill/loop reads
+the same `${issueTracker.*}` tokens regardless of tool:
+
+| Concept | Jira | GitHub Issues | Linear |
+|---|---|---|---|
+| `keyPrefix` / `<KEY>` | `PROJ` → `PROJ-123` | `#` → `#123` | team key → `ENG-12` |
+| `myWorkQuery` | JQL (`assignee = currentUser() AND sprint in openSprints()`) | issue search (`is:open is:issue assignee:@me`) | filter (`assignee:me state:started`) |
+| `states.*` | named workflow statuses | `open`/`closed` + **labels** for interim states | named workflow states |
+| transition | `transitionIds` or state name | add/remove the state **label** (+ close for `done`) | by state name |
+| `handoffAssignee: reporter` | the Jira reporter | the **issue author** | the issue **creator** |
+
+`reporter` always means *the person who opened the issue*, whatever the tracker calls it. Skills and
+loops must not hardcode Jira verbs (transition ids, sprints, JQL) — read the token and act per the
+configured tool; if a tracker has no equivalent for a step, skip it.
+
 ## Loop state — per-project, never global
 
 All loop park/dedupe files live in the project's **`.claude/loops/state/`** (created by `onboard`,
