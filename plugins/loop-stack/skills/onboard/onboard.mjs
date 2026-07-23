@@ -103,6 +103,21 @@ function detectCi() {
   return { host: wf.length ? "github-actions" : "none", deployWorkflows: deploy };
 }
 
+// Optional plugin integrations. Fail-soft: any error yields false, never throws.
+function detectIntegrations() {
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  const hit = (dir) => { try { return fs.readdirSync(dir).some((e) => /superpower/i.test(e)); } catch { return false; } };
+  const bases = home ? [path.join(home, ".claude/plugins/cache"), path.join(home, ".claude/plugins/data")] : [];
+  let superpowers = false;
+  for (const base of bases) {
+    if (hit(base)) { superpowers = true; break; }
+    let subs = [];
+    try { subs = fs.readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path.join(base, e.name)); } catch { subs = []; }
+    if (subs.some(hit)) { superpowers = true; break; }
+  }
+  return { superpowers };
+}
+
 // ---------- observation ----------
 const RANK = { gh: 3, glab: 3, git: 2, files: 2, sessions: 1 };
 const OBS_FIELDS = ["integrationBranch", "mergeStyle", "branchNaming", "envBranches", "reviewers", "mergeMethods", "branchProtected", "environments", "humanGatedEnvs", "ciHost", "deployWorkflows", "deployPlatforms", "recentWorkflows", "cmdTest", "cmdBuild", "cmdLint", "cmdTypecheck", "migrateCmd", "localRestart"];
@@ -294,6 +309,7 @@ function detect() {
     edge: detectEdge(),
     testing: detectTesting(),
     ci: detectCi(),
+    integrations: detectIntegrations(),
   };
 }
 
@@ -347,6 +363,7 @@ function defaultsFrom(d, prev) {
     design: (p.design) || { figma: false, note: "" },
     reporting: (p.reporting) || { daily: true, destination: "none" },
     compliance: (p.compliance) || "none",
+    integrations: { superpowers: (p.integrations && typeof p.integrations.superpowers === "boolean") ? p.integrations.superpowers : d.integrations.superpowers },
     recoveryNotes: (p.recoveryNotes) || "",
   };
 }
@@ -470,6 +487,9 @@ function renderMd(c) {
   L.push("");
   L.push("## Compliance / data protection");
   L.push("- Regime: **" + (c.compliance || "none") + "** (reviewers apply data-protection/sensitive-data checks only when this is not \"none\"; e.g. HIPAA, GDPR, PCI)");
+  L.push("");
+  L.push("## Integrations");
+  L.push("- Superpowers plugin: **" + yn(c.integrations.superpowers) + "** (when yes, skills prefer the superpowers process skills - TDD, systematic-debugging, verification-before-completion, requesting/receiving-code-review, dispatching-parallel-agents, finishing-a-development-branch - and fall back to the built-in checkpoints when no; see skills/shared/superpowers-integration.md)");
   L.push("");
   L.push("## Project recovery / runbook notes");
   L.push(c.recoveryNotes || "_(none - add project-specific recovery steps here; skills reference this section instead of baking them in.)_");

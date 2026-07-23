@@ -40,6 +40,7 @@ Replace every hardcoded specific with the config reference. Mention the old conc
 | "Prod deploys are human-gated" | `ci.humanGatedEnvs` |
 | Figma | `design.figma` |
 | docker/supabase recovery runbook | `recoveryNotes` |
+| superpowers process skills (TDD, verify, review, agent fan-out) | `integrations.superpowers` (yes → prefer them; no/absent → built-in checkpoints; see `skills/shared/superpowers-integration.md`) |
 
 ## Tool-specific skills → generic, config-driven equivalents
 

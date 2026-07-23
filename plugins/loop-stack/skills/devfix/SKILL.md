@@ -27,6 +27,8 @@ NO PRODUCTION-CODE FIX WITHOUT A FAILING TEST FIRST
 
 The RED evidence is a first-class artifact: it lives in the Coder report and is gated by **CHECKPOINT-2-RED** before any GREEN production diff is accepted.
 
+> If `${integrations.superpowers}`, invoke `superpowers:test-driven-development` to drive this RED→GREEN→REFACTOR discipline (and `superpowers:systematic-debugging` when diagnosing the failing symptom / a RED that fails for the wrong reason) — see `skills/shared/superpowers-integration.md`. Otherwise the Iron-Law checkpoints above remain authoritative.
+
 ## Lesson loop — ask + store project memory (MANDATORY)
 
 Lessons live in the configured memory/knowledge store `${memory.store}` (e.g. Qdrant) as the single source of truth — never hardcode lesson text into this skill or any other. If `${memory.store}` is `none`, skip both sides of this loop. Otherwise both sides fire on every devfix:
@@ -489,6 +491,8 @@ CHECKPOINT-3.6: RESOLVER
 ## Phases 3b → DONE — Finish line (shared)
 
 Read `.claude/skills/shared/finish-line.md` and execute it exactly. It owns, in order: **Phase 3b** Format (CHECKPOINT-3b), **Phase 3c** Push incl. the project's pre-commit code-graph update if configured (e.g. `graphify update .`) (CHECKPOINT-3c), **Phase 4** Memory Writeback to `${memory.store}` — mandatory even on block (CHECKPOINT-4), **Phase PR**, **Phase PR-Review** (independent `pr-reviewer` cold review posting comments on the PR via the `${project.vcsHost}` connector, CHECKPOINT-PR-REVIEW), and **Phase DONE** closing gate (ask the user: related unit tests green? related E2E green?).
+
+> If `${integrations.superpowers}`: drive the **Phase DONE** closing gate with `superpowers:verification-before-completion`, the **Phase PR-Review** cold review with `superpowers:requesting-code-review` / `superpowers:receiving-code-review`, and the merge/handoff with `superpowers:finishing-a-development-branch` — see `skills/shared/superpowers-integration.md`. Otherwise the finish-line checkpoints remain authoritative.
 
 ---
 

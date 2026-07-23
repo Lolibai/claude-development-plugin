@@ -121,6 +121,8 @@ Adjust the structure to fit your project’s organization, but maintain logical 
 
 ## Step 4: Universal Unit Test Strategy
 
+> If `${integrations.superpowers}`, invoke `superpowers:test-driven-development` to drive this feature's tests (write the test around the intended behavior, watch it fail, implement to green), and `superpowers:systematic-debugging` when a test surfaces an unexpected failure — see `skills/shared/superpowers-integration.md`. Otherwise follow the strategy below. (`implement` is test-backed, not rigid-TDD like `devfix`.)
+
 ### Test Location
 
 Place tests so that their path matches the implementation:
@@ -299,6 +301,8 @@ it('calls onConfirm', async () => {
 ```
 
 ## Step 5: Universal Verification Checklist
+
+> If `${integrations.superpowers}`, run this gate through `superpowers:verification-before-completion` (evidence before any "done" claim) — see `skills/shared/superpowers-integration.md`. Otherwise verify the checklist below directly.
 
 Before marking any implementation as complete, verify:
 

@@ -52,7 +52,10 @@ waiting).
    transient `.claude/scheduled_tasks.lock`) dirty → **STOP** (another loop is mid-work).
 4. Pick **ONE** PR needing help, by the priority table above; ties → oldest `updatedAt`. None → **STOP**.
 5. Act — **one action, one PR**:
-   - **REVIEW-RESPOND:** checkout the PR branch. For each actionable comment: make the minimal
+   - **REVIEW-RESPOND:** checkout the PR branch. When `${integrations.superpowers}` is set, work the
+     incoming comments through `superpowers:receiving-code-review` (see
+     `skills/shared/superpowers-integration.md`); otherwise apply the discipline below directly.
+     For each actionable comment: make the minimal
      change it asks for — with full **assertion integrity** (never weaken or delete a test to satisfy
      a comment without stating why in the reply). For comments you disagree with: reply with the
      technical reasoning, change nothing. Reply to **every** unresolved thread (what changed, or why

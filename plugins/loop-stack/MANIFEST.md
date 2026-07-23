@@ -42,3 +42,13 @@ Scoping invariant: work is selected by `${issueTracker.myWorkQuery}` — user-sc
 
 > Read `.claude/stack.md` first. Use its values; never assume a specific tool. If a needed
 > capability is `none`, skip those steps. If the config is missing, run `onboard` and stop.
+
+## Superpowers integration (optional)
+
+If the official **superpowers** plugin is installed, `onboard` records `integrations.superpowers: yes`
+in `.claude/stack.md`, and the shared engineering disciplines delegate to it: TDD, systematic
+debugging, verification-before-completion, requesting/receiving code review, parallel-agent
+dispatch, and finishing-a-development-branch. When it is absent (`no`), every touchpoint falls back
+to its built-in checkpoint — nothing hard-depends on superpowers. The delegation contract and the
+full touchpoint → skill map live in **`skills/shared/superpowers-integration.md`** (the single source
+of truth; other files reference it, never restate it).
