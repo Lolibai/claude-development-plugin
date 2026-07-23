@@ -33,7 +33,7 @@ Scoping invariant: work is selected by `${issueTracker.myWorkQuery}` — user-sc
 - **skills/onboard/** — writes `.claude/stack.md` (`onboard.mjs` + `stack.example.md`) and drops the universal `CLAUDE.template.md` as the project's root `CLAUDE.md`. Run first.
 - **skills/lego-philosophy/** — the reusable, project-agnostic UI architecture rule (smart/dumb split + component inventory); the root `CLAUDE.md` and `frontend-component-conventions` reference it.
 - **loops/ (6)** — per-tick specs (FIX/VERIFY/STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, SYNC-INTEGRATION, DAILY-REPORT).
-- **skills/ (~30)** — orchestration (launch/stop-loop-stack), the devfix fix-path, the gherkin sub-flow, test/review/memory skills. Tool-specific skills are generic + config-driven (database-migration, serverless-function, memory-first, test-management-sync).
+- **skills/ (~30)** — orchestration (launch/stop-loop-stack), the devfix fix-path, the gherkin sub-flow, test/review/memory skills, and `scaffold-test-projects` (bootstrap a Gherkin-driven Playwright E2E project + unit tests: page objects, web-element wrappers, hooks). Tool-specific skills are generic + config-driven (database-migration, serverless-function, memory-first, test-management-sync).
 - **agents/ (13)** — the implement/review agent team (analyzer, coder, tester, reviewers, resolver, designer, etc.), tool-agnostic.
 - **commands/ (10)** — fix/PR-flow slash commands.
 - **CONVENTIONS.md** — how every file stays universal (the config contract + token map).

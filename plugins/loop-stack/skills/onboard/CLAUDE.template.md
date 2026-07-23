@@ -113,6 +113,7 @@ pre-plan a session. Skills read `.claude/stack.md`; anything the config marks `n
 | Build or edit any UI (component-first / smart-dumb split) | `lego-philosophy`, `frontend-component-conventions` |
 | Design → code | `figma-plan-and-validate` → `implement-designs` |
 | Mobile responsiveness audit | `mobile-friendly-checker` |
+| Scaffold a test harness from scratch (E2E + unit, Playwright + Gherkin, page objects / hooks) | `scaffold-test-projects` |
 | E2E (BDD / `.feature`) fixing or coverage | `e2e-narrow-fail-focus-success` |
 | Test-management ↔ E2E mirrors | `test-management-sync` |
 | Verify / double-check after implementation | `double-check-code`, `generate-tests-after-implementation` |

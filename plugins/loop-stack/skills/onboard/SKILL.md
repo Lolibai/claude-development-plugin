@@ -52,6 +52,10 @@ Every other skill/agent/command/loop reads `.claude/stack.md` for these values. 
   read from `.claude/stack.md`). An existing `CLAUDE.md` is left untouched; merge from
   `skills/onboard/CLAUDE.template.md` if desired.
 - Point them at `launch-loop-stack` to start the autonomous loops, now driven by their config.
+- **No test harness?** If `${testing.e2e.runner}` or `${testing.unit.runner}` came out `none` (the project has
+  no E2E/unit project yet), point the user at **`scaffold-test-projects`** to bootstrap a Gherkin-driven
+  Playwright E2E project + a unit-tests project (page objects, typed web-element wrappers, hooks). After it
+  runs, re-run `onboard` so the new runners/dirs/tag convention land in `.claude/stack.md`.
 
 ## Contract for every other skill
 

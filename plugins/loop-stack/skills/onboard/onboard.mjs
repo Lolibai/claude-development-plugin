@@ -567,3 +567,11 @@ if (!fs.existsSync(claudeMdPath)) {
 } else {
   console.log("  CLAUDE.md already exists — left untouched. See skills/onboard/CLAUDE.template.md for the universal version.");
 }
+
+// No test harness detected -> point at the scaffolder (Playwright + Gherkin E2E, unit project).
+const noE2E = !cfg.testing.e2e.runner || cfg.testing.e2e.runner === "none";
+const noUnit = !cfg.testing.unit.runner || cfg.testing.unit.runner === "none";
+if (noE2E || noUnit) {
+  const which = noE2E && noUnit ? "no E2E or unit test project" : noE2E ? "no E2E project" : "no unit-test project";
+  console.log("  " + which + " detected -> run the 'scaffold-test-projects' skill to bootstrap a Gherkin-driven Playwright E2E project + unit tests (page objects, web-element wrappers, hooks), then re-run onboard.");
+}
