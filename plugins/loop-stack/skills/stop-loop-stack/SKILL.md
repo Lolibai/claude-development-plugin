@@ -1,6 +1,6 @@
 ---
 name: stop-loop-stack
-description: Tear down the autonomous "my work in the active iteration" loop stack for the current session — delete the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, DAILY-REPORT, and SYNC-INTEGRATION recurring crons in one shot so no further ticks fire. Use when the user says "stop the loops", "bring the loop stack down", "tear down / halt / kill / pause the loops", "stop the my-work loops", or "disable the autonomous loops". The inverse of `launch-loop-stack`. Stops scheduling only — never touches code, branches, or in-flight issue-tracker/PR state.
+description: Tear down the autonomous "my work in the active iteration" loop stack for the current session — delete the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, DAILY-REPORT, SYNC-INTEGRATION, and TRACEABILITY recurring crons in one shot so no further ticks fire. Use when the user says "stop the loops", "bring the loop stack down", "tear down / halt / kill / pause the loops", "stop the my-work loops", or "disable the autonomous loops". The inverse of `launch-loop-stack`. Stops scheduling only — never touches code, branches, or in-flight issue-tracker/PR state.
 ---
 
 # Stop Loop Stack
@@ -26,6 +26,7 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 | **PR-SHEPHERD** | `Autonomous PR-SHEPHERD TICK` | `.claude/loops/pr-shepherd.md` |
 | **DAILY-REPORT** | `Autonomous DAILY-REPORT TICK` | `.claude/loops/daily-report.md` |
 | **SYNC-INTEGRATION** | `Autonomous SYNC-INTEGRATION TICK` | `.claude/loops/sync-integration.md` |
+| **TRACEABILITY** | `Autonomous TRACEABILITY TICK` | `.claude/loops/traceability.md` |
 
 ## When to use
 
@@ -39,7 +40,7 @@ The loops it tears down (identify by the **prompt signature**, not a fixed count
 3. **Delete each matched cron** with `CronDelete <id>`. One call per job.
 4. **Re-list** (`CronList`) to confirm none of the signatures remain.
 5. **Report**:
-   - Every job ID deleted, grouped by loop name (FIX / VERIFY / STORY-VERIFY / PR-REVIEW / DEPLOY-FIX / PR-SHEPHERD / DAILY-REPORT / SYNC-INTEGRATION).
+   - Every job ID deleted, grouped by loop name (FIX / VERIFY / STORY-VERIFY / PR-REVIEW / DEPLOY-FIX / PR-SHEPHERD / DAILY-REPORT / SYNC-INTEGRATION / TRACEABILITY).
    - Any stack loop that was **already absent** (nothing to delete).
    - Any **non-stack** crons left untouched (list them so the user knows they're still scheduled).
 6. Do **not** delete the loop state files in `.claude/loops/state/` by default (see below).
@@ -59,6 +60,7 @@ The loops keep small dedupe / park files in the project's `.claude/loops/state/`
 - `.claude/loops/state/deploy-fix-done.txt` — deploy run IDs already handled.
 - `.claude/loops/state/pr-shepherd-done.txt` — `"<number>@<headRefOid>"` of my PRs already shepherded (incl. `# needs-human` escalations).
 - `.claude/loops/state/sync-integration-blocked.txt` — fix-base↔env branch pairs SYNC-INTEGRATION could not sync (conflict/protected).
+- `.claude/loops/state/trace-matrix.json` / `trace-report.md` / `trace-cursor.txt` / `trace-blocked.txt` — the TRACEABILITY chain audit. The report is a rebuild, so it is safe to keep; the cursor is safe to delete (a new pass just restarts).
 
 Only clear these if the user explicitly asks for a **full reset** (e.g. "stop the loops and wipe their state"). If so, `rm -f` the files and say which were removed.
 

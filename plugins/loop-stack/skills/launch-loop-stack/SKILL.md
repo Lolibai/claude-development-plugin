@@ -1,6 +1,6 @@
 ---
 name: launch-loop-stack
-description: Launch the full autonomous loop stack for the current session — the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, SYNC-INTEGRATION, and DAILY-REPORT recurring ticks — by creating their session crons in one shot. Use when the user says "launch the loops", "start the loop stack", "set up the my-work loops", "run the autonomous loops", or after a session restart where the prior crons were lost. Each loop is one-action-per-tick, reads .claude/stack.md for all project specifics, and never overrides branch protection. Full per-loop specs live in .claude/loops/.
+description: Launch the full autonomous loop stack for the current session — the FIX, VERIFY, STORY-VERIFY, PR-REVIEW, DEPLOY-FIX, PR-SHEPHERD, SYNC-INTEGRATION, DAILY-REPORT, and TRACEABILITY recurring ticks — by creating their session crons in one shot. Use when the user says "launch the loops", "start the loop stack", "set up the my-work loops", "run the autonomous loops", or after a session restart where the prior crons were lost. Each loop is one-action-per-tick, reads .claude/stack.md for all project specifics, and never overrides branch protection. Full per-loop specs live in .claude/loops/.
 ---
 
 # Launch Loop Stack
@@ -17,6 +17,7 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 > skip PR-SHEPHERD when the VCS host has no authenticated-user concept (identity is `@me` — the authenticated `gh` user, never a committed username, so shared config works for every team member);
 > skip SYNC-INTEGRATION when `${vcs.fixBaseBranches}` is empty or every fix base equals its env branch.
 > DAILY-REPORT always applies (push notification needs no config; `${reporting.destination}` is optional).
+> TRACEABILITY always applies, but each link it checks is independently optional: skip the spec link when `${docs.platform}` is `none`, the test-ticket link when `${testing.testManagement}` is `none`, and the test-file link when `${testing.e2e.runner}` is `none`. A skipped link is `n/a`, never a gap.
 
 | Loop | Cadence | Cron expression | Spec |
 |---|---|---|---|
@@ -28,6 +29,7 @@ Create the session-scoped recurring crons that drive the autonomous **"my work i
 | **PR-SHEPHERD** | every 10 min at :06/:16/… | `6,16,26,36,46,56 * * * *` | `.claude/loops/pr-shepherd.md` |
 | **SYNC-INTEGRATION** | twice hourly at :09/:39 | `9,39 * * * *` | `.claude/loops/sync-integration.md` |
 | **DAILY-REPORT** | weekdays 16:59, once | `59 16 * * 1-5` | `.claude/loops/daily-report.md` |
+| **TRACEABILITY** | every 15 min at :07/:22/:37/:52 | `7,22,37,52 * * * *` | `.claude/loops/traceability.md` |
 
 These are **session-only** (auto-expire after 7 days, stop when the session ends). They never force-merge or override branch protection.
 
@@ -183,6 +185,25 @@ Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/
 
 ---
 
+### Loop 9 — TRACEABILITY  (`cron: 7,22,37,52 * * * *`, recurring)
+
+```
+Autonomous TRACEABILITY TICK (any time, session active). First read .claude/stack.md. Walk ONE issue per tick across the whole delivery chain — spec -> story -> code -> test — and record where it is broken. READ-MOSTLY: writes .claude/loops/state/ and (only if ${reporting.commentOnTracker} is true) ONE tracker comment per NEW finding. Never edits code, never transitions an issue, never touches a PR. Full spec: .claude/loops/traceability.md
+
+1. SELECT: query ${issueTracker.myWorkQuery} WIDENED TO ALL STATUSES (this loop audits the whole product, not just the active iteration). EXCLUDE keys in .claude/loops/state/trace-cursor.txt. None left -> clear the cursor, start a new pass, STOP. Pick the oldest unwalked key.
+2. SPEC LINK: ${docs.platform} is none -> spec: n/a. Else find the issue's docs URL (description link / remote link / doc field). Missing -> spec: MISSING. Present -> fetch the page, extract its acceptance criteria.
+3. CODE LINK: verify each AC against the repo(s). EVIDENCE OR IT DIDN'T HAPPEN — a BUILT verdict needs file:line PER AC, and exact-string matching on user-visible copy (toasts, empty states, labels); a near-match is PARTIAL, not BUILT. Record BUILT | PARTIAL | MISSING | DECISION | UNCLEAR. Behaviour not observable statically (performance, generated SQL, rendered layout) -> say so rather than guess. A repo not checked out in this workspace -> UNCLEAR naming the repo; ABSENCE FROM THE WORKSPACE IS NOT ABSENCE FROM THE PRODUCT.
+4. SPEC<->CODE DRIFT: if AC and code disagree, decide WHICH IS WRONG before calling it a gap. Search the tracker for a later issue that deliberately changed this behaviour — if one exists the AC is superseded: record drift: AC-SUPERSEDED-BY-<KEY>, never MISSING. Where the project names an arbiter for disagreements (e.g. a frozen legacy app), consult it first.
+5. TEST-TICKET LINK: ${testing.testManagement} is none -> testTicket: n/a. Else check for a linked case/scenario issue; none -> testTicket: MISSING.
+6. TEST-FILE LINK: ${testing.e2e.runner} is none -> testFile: n/a. Else resolve the scenario to a file in ${testing.e2e.dir}: prefer ${testing.e2e.tagConvention}; if the suite does not tag by ticket, SAY SO ONCE and fall back to title match (exact, then normalised) recording HOW it matched — a weak fuzzy match is worse than none. The file must be COLLECTED BY THE RUNNER, not merely present on disk: a scenario in a staging dir no project includes is testFile: NOT-RUNNABLE, which looks like coverage and is not.
+7. RECORD: upsert the issue's record in .claude/loops/state/trace-matrix.json, append the key to trace-cursor.txt, and REBUILD .claude/loops/state/trace-report.md from the matrix (always a rebuild, never appended): chain coverage (issues with all four links) · gap counts per link · orphans both directions (test tickets with no story, spec pages no story references) · the drift list · a Limitations section naming every sibling repo the chain needs that is NOT checked out.
+8. ESCALATE: only if ${reporting.commentOnTracker} is true AND this is a NEW finding for that key — ONE comment naming the broken link and what would close it. Dedupe on "<KEY>@<gap-class>" so a standing gap is reported once, not every pass. Never transition, never reassign.
+9. NOTIFY ONLY ON A FLIP: a link that was present and is now broken -> one PushNotification. Steady-state gaps stay in the report and stay silent.
+Undecidable -> append "<KEY> # <reason>" to .claude/loops/state/trace-blocked.txt and STOP. One issue per tick. Session-only.
+```
+
+---
+
 ## Stopping the stack
 
 - **`stop-loop-stack`** — the inverse skill: deletes every loop cron in one shot. Prefer it over manual deletion.
@@ -193,4 +214,4 @@ Autonomous DAILY-REPORT TICK (once per weekday, end of day). First read .claude/
 
 - `.claude/loops/*.md` — full per-loop specs (recovery, deploy-gate detail, story e2e-gate).
 - `onboard` — writes `.claude/stack.md` (run once per project before launching).
-- `devfix` — the skill each FIX tick runs. `github-pr-review` — the skill each PR-REVIEW tick runs.
+- `traceability` — the loop that audits spec<->story<->code<->test alignment. `devfix` — the skill each FIX tick runs. `github-pr-review` — the skill each PR-REVIEW tick runs.
