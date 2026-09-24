@@ -15,6 +15,10 @@
 // the result is dirty, so a stale table can't ship):
 //   node scripts/gen-spec-hashes.mjs
 //
+// Pass an output path to write the table elsewhere instead of overwriting the tracked one — used
+// by tests/spec-self-heal.test.mjs to check the generator is byte-stable without mutating the repo:
+//   node scripts/gen-spec-hashes.mjs /tmp/scratch.json
+//
 // No external dependencies — Node built-ins only.
 
 import fs from "node:fs";
@@ -25,7 +29,7 @@ import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SPEC_DIR = "plugins/loop-stack/loops";
-const OUT = path.join(REPO_ROOT, SPEC_DIR, ".known-hashes.json");
+const OUT = process.argv[2] ? path.resolve(process.argv[2]) : path.join(REPO_ROOT, SPEC_DIR, ".known-hashes.json");
 
 // stdio "pipe" on stderr: a rename makes some <commit>:<path> lookups legitimately miss, and the
 // resulting git "fatal:" chatter would drown the one line that matters.

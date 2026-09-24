@@ -46,10 +46,14 @@ describe("the known-version hash table", () => {
 
   // Byte-stable output is what lets the release gate diff it. If regeneration embedded a
   // timestamp, the gate would fire on every run and everyone would learn to bypass it.
+  //
+  // Regenerated into a scratch file, never the tracked one — this test only checks the generator
+  // reproduces what's committed, it must not itself be a way to mutate the repo as a side effect.
   test("regenerating is byte-stable and the checked-in table is current", () => {
     const before = fs.readFileSync(HASHES, "utf8");
-    execFileSync(process.execPath, [path.join(REPO_ROOT, "scripts/gen-spec-hashes.mjs")], { cwd: REPO_ROOT, stdio: "pipe" });
-    const after = fs.readFileSync(HASHES, "utf8");
+    const scratch = path.join(tmpProject({}), ".known-hashes.json");
+    execFileSync(process.execPath, [path.join(REPO_ROOT, "scripts/gen-spec-hashes.mjs"), scratch], { cwd: REPO_ROOT, stdio: "pipe" });
+    const after = fs.readFileSync(scratch, "utf8");
 
     assert.equal(after, before, "the table drifted from the specs — run scripts/gen-spec-hashes.mjs and commit the result");
   });
