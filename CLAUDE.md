@@ -17,7 +17,40 @@ The root `.claude-plugin/marketplace.json` registers both. Each plugin has its o
 its `plugin.json`, its entry in the root `marketplace.json`, and any docs that cite it.
 
 Each plugin version ships as its own GitHub release, tagged `<plugin>-v<version>`, cut locally with
-`node scripts/release.mjs` (never GitHub Actions), published to both `origin` and `upstream`. See **`RELEASING.md`**.
+`node scripts/release.mjs` (never GitHub Actions), published to both `origin` and `upstream`. See **`RELEASING.md`**
+for the cutting mechanics (tagging, `--dry-run`, what the script refuses to do). This section is the
+other half: **which segment to bump.** Each plugin versions independently — a change to one plugin
+never bumps the other's version.
+
+### Choosing the semver bump
+
+A plugin here is a contract of Markdown instructions and config tokens consumed by a project's
+`.claude/stack.md` / `.claude/stack.json` and by whatever already-materialized `.claude/loops/*.md`
+files exist in projects that onboarded earlier. "Breaking" means *that contract*, not the
+implementation behind it:
+
+- **Patch** — a fix that doesn't change what a project needs to supply or how a skill/loop behaves
+  from the outside: prose clarifications, bug fixes in `.mjs` scripts that restore documented
+  behavior, a corrected `${token}` reference, a loop-spec wording fix that still self-heals cleanly
+  (see the self-healing rule below).
+- **Minor** — a backward-compatible addition: a new skill/agent/command/loop, a new *optional*
+  `${...}` config token with a sensible default/fallback when absent, a new capability gated the
+  existing "if `none`, skip — don't ask, don't invent" way (see `CONVENTIONS.md`).
+- **Major** — anything an already-onboarded project must change to keep working: renaming or
+  removing a `${token}` a project's `stack.md` supplies, removing/renaming a skill/agent/command
+  another project's automation might invoke by name, changing `stack.md`/`stack.json`'s schema in an
+  incompatible way, or changing a materialized loop spec's behavior in a way that isn't safe for
+  `onboard`'s self-heal to silently apply (i.e. the new spec should *not* just replace an old one
+  transparently on next onboard).
+
+When in doubt, treat it as the higher of the two candidate bumps — a plugin consumer has no changelog
+to consult except the version number itself.
+
+### After bumping
+
+Editing a **loop spec** (`plugins/loop-stack/loops/*.md`) additionally requires regenerating
+`loops/.known-hashes.json` via `node scripts/gen-spec-hashes.mjs` — see the self-healing rule further
+down — and `scripts/release.mjs` will refuse to cut the release if that table is stale.
 
 ## Commands
 
